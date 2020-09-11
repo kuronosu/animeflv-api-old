@@ -75,7 +75,8 @@ func scrapeByPage() {
 		return
 	}
 	errc := 0
-	errs := []scrape.Result{}
+	errs := []scrape.RequestResult{}
+	allAnimes := []scrape.Anime{}
 	for _, page := range scrape.MakeRange(1, pages) {
 		start2 := time.Now()
 		urls, err := scrape.GetAnimeURLSFromDirectoryPage(page)
@@ -84,13 +85,14 @@ func scrapeByPage() {
 		if err == nil {
 			results := scrape.AsyncHTTPGets(urls, scrape.HandleAnimeScrape)
 			for _, result := range results {
-				if result.HTTPResponse.Err != nil || result.Document.Err != nil {
+				if result.OK {
 					errc++
 					errcp++
 					errs = append(errs, *result)
 					continue
 				}
-				animes = append(animes, result.HandledResponse.(scrape.Anime))
+				animes = append(animes, result.ProcessedResponseData.(scrape.Anime))
+				allAnimes = append(allAnimes, result.ProcessedResponseData.(scrape.Anime))
 			}
 			// time.Sleep(500 * time.Millisecond)
 			fmt.Printf("Scraped page: #%d\twith %d animes and %d errors\tin %s\n", page, len(animes), errcp, time.Since(start2))
@@ -100,7 +102,8 @@ func scrapeByPage() {
 	}
 	fmt.Println(errs)
 	// return errc
-	fmt.Printf("Completado en %s con %d errores", time.Since(start), errc)
+	fmt.Printf("Completado en %s con %d errores\n", time.Since(start), errc)
+	fmt.Println(allAnimes[0])
 }
 
 func main() {

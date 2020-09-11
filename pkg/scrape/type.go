@@ -46,24 +46,15 @@ type Anime struct {
 	Episodes  []Episode
 }
 
-// HTTPResponse represents http Response
-type HTTPResponse struct {
-	URL      string
-	Response *http.Response
-	Err      error
-}
-
-// Document content
-type Document struct {
-	Document *goquery.Document
-	Err      error
-}
-
-// Result contains the response and the handled response
-type Result struct {
-	HTTPResponse    HTTPResponse
-	HandledResponse interface{}
-	Document        Document
+// RequestResult contains the response, document and the processed data
+type RequestResult struct {
+	URL                   string
+	Response              *http.Response
+	ResponseErr           error
+	Document              *goquery.Document
+	DocumentErr           error
+	ProcessedResponseData interface{}
+	OK                    bool
 }
 
 // NewEpisode create a episode instance

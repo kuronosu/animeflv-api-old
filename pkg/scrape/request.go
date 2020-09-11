@@ -43,36 +43,26 @@ func FetchDocument(URL string) (*goquery.Document, error) {
 }
 
 // AsyncHTTPGets make request to multiples Urls asynchronously
-func AsyncHTTPGets(Urls []string, handler func(*HTTPResponse, *goquery.Document) interface{}) []*Result {
-	ch := make(chan *HTTPResponse, len(Urls)) // buffered
-	for _, URL := range Urls {
+func AsyncHTTPGets(urls []string, handler func(RequestResult) interface{}) []*RequestResult {
+	ch := make(chan *RequestResult, len(urls)) // buffered
+	for _, URL := range urls {
 		go func(URL string) {
 			resp, err := http.Get(AnimeURL(URL))
-			ch <- &HTTPResponse{Response: resp, URL: URL, Err: err}
+			ch <- &RequestResult{Response: resp, URL: URL, ResponseErr: err}
 		}(URL)
 	}
 
-	results := []*Result{}
+	results := []*RequestResult{}
 	for {
 		select {
-		case response := <-ch:
-			var hResponse interface{}
-			var doc *goquery.Document
-			var err error = nil
-			// var err error = nil
-			if response.Err == nil {
-				doc, err = GetDocument(response.Response, response.URL)
-				if err == nil {
-					hResponse = handler(response, doc)
-				}
+		case result := <-ch:
+			if result.ResponseErr == nil {
+				result.Document, result.DocumentErr = GetDocument(result.Response, result.URL)
+				result.ProcessedResponseData = handler(*result)
 			}
-			res := Result{
-				HTTPResponse:    *response,
-				HandledResponse: hResponse,
-				Document:        Document{Document: doc, Err: err},
-			}
-			results = append(results, &res)
-			if len(results) == len(Urls) {
+			result.OK = result.ResponseErr != nil && result.DocumentErr != nil
+			results = append(results, result)
+			if len(results) == len(urls) {
 				return results
 			}
 		}
