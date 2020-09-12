@@ -3,6 +3,7 @@ package scrape
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -56,15 +57,54 @@ func AsyncHTTPGets(urls []string, handler func(RequestResult) interface{}) []*Re
 	for {
 		select {
 		case result := <-ch:
-			if result.ResponseErr == nil {
+			if result.OK = result.ResponseErr == nil; result.OK {
 				result.Document, result.DocumentErr = GetDocument(result.Response, result.URL)
+				result.OK = result.OK && result.DocumentErr == nil
 				result.ProcessedResponseData = handler(*result)
 			}
-			result.OK = result.ResponseErr != nil && result.DocumentErr != nil
 			results = append(results, result)
 			if len(results) == len(urls) {
 				return results
 			}
 		}
 	}
+}
+
+// AllAnimesByPage get all the animes by making asynchronous requests one page at a time
+func AllAnimesByPage() ([]interface{}, []RequestResult, []int) {
+	start := time.Now()
+	pages, err := GetDirectoryPageCount()
+	errs := []RequestResult{}
+	pagesErr := []int{}
+	if err != nil {
+		return []interface{}{}, errs, pagesErr
+	}
+	allAnimes := []interface{}{}
+	for _, page := range MakeRange(1, pages) {
+		start2 := time.Now()
+		urls, err := GetAnimeURLSFromDirectoryPage(page)
+		errcp := 0
+		animes := []Anime{}
+		if err == nil {
+			results := AsyncHTTPGets(urls, HandleAnimeScrape)
+			for _, result := range results {
+				if !result.OK {
+					errcp++
+					errs = append(errs, *result)
+					continue
+				}
+				animes = append(animes, result.ProcessedResponseData.(Anime))
+				allAnimes = append(allAnimes, result.ProcessedResponseData)
+			}
+			// time.Sleep(500 * time.Millisecond)
+			fmt.Fprint(os.Stdout, fmt.Sprintf("\r \rScraped page %d of %d with %d animes and %d errors in %s. Total animes %d in %s",
+				page, pages, len(animes), errcp, time.Since(start2), len(allAnimes), time.Since(start)))
+		} else {
+			pagesErr = append(pagesErr, page)
+		}
+	}
+	// return errc
+	fmt.Fprint(os.Stdout, fmt.Sprintf("\r \rCompleted... Pages: %d Animes: %d, Erros: %d in Time %s                                            \n",
+		pages, len(allAnimes), len(errs), time.Since(start)))
+	return allAnimes, errs, pagesErr
 }
