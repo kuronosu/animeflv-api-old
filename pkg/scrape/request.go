@@ -43,8 +43,12 @@ func FetchDocument(URL string) (*goquery.Document, error) {
 	return GetDocument(resp, URL)
 }
 
-// AsyncHTTPGets make request to multiples Urls asynchronously
-func AsyncHTTPGets(urls []string, handler func(RequestResult) interface{}) []*RequestResult {
+// AsyncHTTPGetsAnimes make request to multiples Urls asynchronously
+func AsyncHTTPGetsAnimes(
+	urls []string,
+	handler func(RequestResult, *AnimeSPContainer) interface{},
+	container *AnimeSPContainer,
+) []*RequestResult {
 	ch := make(chan *RequestResult, len(urls)) // buffered
 	for _, URL := range urls {
 		go func(URL string) {
@@ -60,7 +64,7 @@ func AsyncHTTPGets(urls []string, handler func(RequestResult) interface{}) []*Re
 			if result.OK = result.ResponseErr == nil; result.OK {
 				result.Document, result.DocumentErr = GetDocument(result.Response, result.URL)
 				result.OK = result.OK && result.DocumentErr == nil
-				result.ProcessedResponseData = handler(*result)
+				result.ProcessedResponseData = handler(*result, container)
 			}
 			results = append(results, result)
 			if len(results) == len(urls) {
@@ -71,40 +75,45 @@ func AsyncHTTPGets(urls []string, handler func(RequestResult) interface{}) []*Re
 }
 
 // AllAnimesByPage get all the animes by making asynchronous requests one page at a time
-func AllAnimesByPage() ([]interface{}, []RequestResult, []int) {
+func AllAnimesByPage() (interface{}, []RequestResult, []int) {
 	start := time.Now()
-	pages, err := GetDirectoryPageCount()
 	errs := []RequestResult{}
 	pagesErr := []int{}
-	if err != nil {
-		return []interface{}{}, errs, pagesErr
+	pages, err := GetDirectoryPageCount()
+	container := AnimeSPContainer{
+		States: []State{},
+		Types:  []Type{},
+		Genres: []Genre{},
+		Animes: []Anime{},
 	}
-	allAnimes := []interface{}{}
+	if err != nil {
+		return container, errs, pagesErr
+	}
 	for _, page := range MakeRange(1, pages) {
 		start2 := time.Now()
 		urls, err := GetAnimeURLSFromDirectoryPage(page)
 		errcp := 0
-		animes := []Anime{}
+		animeCount := 0
 		if err == nil {
-			results := AsyncHTTPGets(urls, HandleAnimeScrape)
+			results := AsyncHTTPGetsAnimes(urls, HandleAnimeScrape, &container)
 			for _, result := range results {
 				if !result.OK {
 					errcp++
 					errs = append(errs, *result)
 					continue
 				}
-				animes = append(animes, result.ProcessedResponseData.(Anime))
-				allAnimes = append(allAnimes, result.ProcessedResponseData)
+				animeCount++
+				container.Animes = append(container.Animes, result.ProcessedResponseData.(Anime))
 			}
 			// time.Sleep(500 * time.Millisecond)
 			fmt.Fprint(os.Stdout, fmt.Sprintf("\r \rScraped page %d of %d with %d animes and %d errors in %s. Total animes %d in %s",
-				page, pages, len(animes), errcp, time.Since(start2), len(allAnimes), time.Since(start)))
+				page, pages, animeCount, errcp, time.Since(start2), len(container.Animes), time.Since(start)))
 		} else {
 			pagesErr = append(pagesErr, page)
 		}
 	}
 	// return errc
 	fmt.Fprint(os.Stdout, fmt.Sprintf("\r \rCompleted... Pages: %d Animes: %d, Erros: %d in Time %s                                            \n",
-		pages, len(allAnimes), len(errs), time.Since(start)))
-	return allAnimes, errs, pagesErr
+		pages, len(container.Animes), len(errs), time.Since(start)))
+	return container, errs, pagesErr
 }

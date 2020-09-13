@@ -53,11 +53,11 @@ func GetAnimeURLSFromDirectoryPage(page int) ([]string, error) {
 }
 
 //GetAnime scrape anime data from document
-func GetAnime(doc *goquery.Document) Anime {
+func GetAnime(doc *goquery.Document, container *AnimeSPContainer) Anime {
 	anime := Anime{
-		Typea:      getType(doc),
-		State:      getState(doc),
-		Genres:     getGenres(doc),
+		Type:       getType(doc, container),
+		State:      getState(doc, container),
+		Genres:     getGenres(doc, container),
 		OtherNames: getOtherNames(doc),
 		Synopsis:   getSynopsis(doc),
 		Score:      getScore(doc),
@@ -80,20 +80,45 @@ func getScript(document *goquery.Document) string {
 	return script.Text()
 }
 
-func getType(document *goquery.Document) string {
-	return strings.Trim(document.Find("span.Type").Text(), " ")
+func getType(document *goquery.Document, c *AnimeSPContainer) int {
+	typeString := strings.Trim(document.Find("span.Type").Text(), " ")
+	for _, t := range c.Types {
+		if t.Name == typeString {
+			return t.ID
+		}
+	}
+	_type := Type{ID: len(c.Types), Name: typeString}
+	c.Types = append(c.Types, _type)
+	return _type.ID
 }
 
-func getState(document *goquery.Document) string {
-	return strings.Trim(document.Find("span.fa-tv").Text(), " ")
+func getState(document *goquery.Document, c *AnimeSPContainer) int {
+	stateString := strings.Trim(document.Find("span.fa-tv").Text(), " ")
+	for _, s := range c.States {
+		if s.Name == stateString {
+			return s.ID
+		}
+	}
+	state := State{ID: len(c.States), Name: stateString}
+	c.States = append(c.States, state)
+	return state.ID
 }
 
-func getGenres(document *goquery.Document) []string {
-	var genres []string
+func getGenres(document *goquery.Document, c *AnimeSPContainer) []int {
+	var genresIDs []int
 	document.Find("nav.Nvgnrs").Find("a").Each(func(index int, element *goquery.Selection) {
-		genres = append(genres, strings.Trim(element.Text(), " "))
+		genreString := strings.Trim(element.Text(), " ")
+		for _, g := range c.Genres {
+			if g.Name == genreString {
+				genresIDs = append(genresIDs, g.ID)
+				return
+			}
+		}
+		genre := Genre{ID: len(c.Genres), Name: genreString}
+		c.Genres = append(c.Genres, genre)
+		genresIDs = append(genresIDs, genre.ID)
 	})
-	return genres
+	return genresIDs
 }
 
 func getOtherNames(document *goquery.Document) []string {

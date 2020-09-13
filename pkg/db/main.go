@@ -27,6 +27,27 @@ func SetUp() (*mongo.Client, error) {
 	return client, nil
 }
 
+// InsertStates insert list of states in states collection
+func InsertStates(client *mongo.Client, states []interface{}) (*mongo.InsertManyResult, error) {
+	collection := client.Database("deguvon").Collection("states")
+	insertManyResult, err := collection.InsertMany(context.TODO(), states)
+	return insertManyResult, err
+}
+
+// InsertTypes insert list of types in types collection
+func InsertTypes(client *mongo.Client, types []interface{}) (*mongo.InsertManyResult, error) {
+	collection := client.Database("deguvon").Collection("types")
+	insertManyResult, err := collection.InsertMany(context.TODO(), types)
+	return insertManyResult, err
+}
+
+// InsertGenres insert list of genres in genres collection
+func InsertGenres(client *mongo.Client, genres []interface{}) (*mongo.InsertManyResult, error) {
+	collection := client.Database("deguvon").Collection("genres")
+	insertManyResult, err := collection.InsertMany(context.TODO(), genres)
+	return insertManyResult, err
+}
+
 // InsertAnimes insert list of animes in animes collection
 func InsertAnimes(client *mongo.Client, animes []interface{}) (*mongo.InsertManyResult, error) {
 	collection := client.Database("deguvon").Collection("animes")
