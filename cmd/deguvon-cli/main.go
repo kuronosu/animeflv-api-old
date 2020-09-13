@@ -6,8 +6,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/kuronosu/deguvon/pkg/db"
-	"github.com/kuronosu/deguvon/pkg/scrape"
+	"github.com/kuronosu/deguvon-server-go/pkg/db"
+	"github.com/kuronosu/deguvon-server-go/pkg/scrape"
 )
 
 var stopSpinner bool
