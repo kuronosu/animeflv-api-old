@@ -44,11 +44,7 @@ func FetchDocument(URL string) (*goquery.Document, error) {
 }
 
 // AsyncHTTPGetsAnimes make request to multiples Urls asynchronously
-func AsyncHTTPGetsAnimes(
-	urls []string,
-	handler func(RequestResult, *AnimeSPContainer) interface{},
-	container *AnimeSPContainer,
-) []*RequestResult {
+func AsyncHTTPGetsAnimes(urls []string, container *AnimeSPContainer) []*RequestResult {
 	ch := make(chan *RequestResult, len(urls)) // buffered
 	for _, URL := range urls {
 		go func(URL string) {
@@ -64,7 +60,7 @@ func AsyncHTTPGetsAnimes(
 			if result.OK = result.ResponseErr == nil; result.OK {
 				result.Document, result.DocumentErr = GetDocument(result.Response, result.URL)
 				result.OK = result.OK && result.DocumentErr == nil
-				result.ProcessedResponseData = handler(*result, container)
+				result.ProcessedResponseData = HandleAnimeScrape(*result, container)
 			}
 			results = append(results, result)
 			if len(results) == len(urls) {
@@ -95,7 +91,7 @@ func AllAnimesByPage() (interface{}, []RequestResult, []int) {
 		errcp := 0
 		animeCount := 0
 		if err == nil {
-			results := AsyncHTTPGetsAnimes(urls, HandleAnimeScrape, &container)
+			results := AsyncHTTPGetsAnimes(urls, &container)
 			for _, result := range results {
 				if !result.OK {
 					errcp++

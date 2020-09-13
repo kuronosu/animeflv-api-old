@@ -5,5 +5,5 @@ func HandleAnimeScrape(result RequestResult, container *AnimeSPContainer) interf
 	if !result.OK {
 		return Anime{}
 	}
-	return GetAnime(result.Document, container)
+	return GetAnime(result.Document, &container.States, &container.Types, &container.Genres)
 }
