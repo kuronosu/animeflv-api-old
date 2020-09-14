@@ -134,10 +134,10 @@ func getOtherNames(document *goquery.Document) []string {
 	return names
 }
 
-func getScore(document *goquery.Document) float32 {
+func getScore(document *goquery.Document) float64 {
 	str := strings.Trim(document.Find("span#votes_prmd").Text(), " ")
-	score, _ := strconv.ParseFloat(str, 32)
-	return float32(score)
+	score, _ := strconv.ParseFloat(str, 64)
+	return score
 }
 
 func getVotes(document *goquery.Document) int {
@@ -210,7 +210,7 @@ func setEpisodesFromScript(a *Anime, script string) {
 	rawEpisodes := EpisodeScriptPattern.FindString(script)
 	rawEpisodes = strings.ReplaceAll(rawEpisodes, "var episodes = ", "")
 	rawEpisodes = rawEpisodes[0 : len(rawEpisodes)-1]
-	var episodesData [][]float32
+	var episodesData [][]float64
 	_ = json.Unmarshal([]byte(rawEpisodes), &episodesData)
 	var episodes []Episode
 	for _, ep := range episodesData {

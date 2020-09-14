@@ -16,7 +16,7 @@ type Relation struct {
 
 // Episode represents raw data of episode from animeflv
 type Episode struct {
-	Number float32
+	Number float64
 	Eid    int
 	URL    string
 	Img    string
@@ -54,7 +54,7 @@ type Anime struct {
 	Genres     []int    //OK
 	OtherNames []string //OK
 	Synopsis   string   //OK
-	Score      float32  //OK
+	Score      float64  //OK
 	Votes      int      //OK
 	// Images
 	Cover  string //OK
@@ -84,7 +84,7 @@ type AnimeSPContainer struct {
 }
 
 // NewEpisode create a episode instance
-func NewEpisode(Number float32, Eid int, Flvid string, animeSlug string) Episode {
+func NewEpisode(Number float64, Eid int, Flvid string, animeSlug string) Episode {
 	return Episode{
 		Number: Number,
 		Eid:    Eid,

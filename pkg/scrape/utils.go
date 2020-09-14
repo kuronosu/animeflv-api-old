@@ -53,11 +53,11 @@ func appendCategory(a []string, b []string) []string {
 	return res
 }
 
-// FloatToString convert float32 to string
-func FloatToString(num float32) string {
+// FloatToString convert float64 to string
+func FloatToString(num float64) string {
 	decimals := 1
 	if math.Trunc(float64(num)) == float64(num) {
 		decimals = 0
 	}
-	return strconv.FormatFloat(float64(num), 'f', decimals, 32)
+	return strconv.FormatFloat(float64(num), 'f', decimals, 64)
 }
