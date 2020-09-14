@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -26,7 +27,18 @@ func spinner(message string, delay time.Duration) {
 var c chan struct{} = make(chan struct{}) // event marker
 
 func main() {
-	intervalForLatestEpisodes()
+	createFlag := flag.Bool("c", false, "Create directory")
+	latestEpisodesFlag := flag.Bool("le", false, "Latest episodes")
+	helpFlag := flag.Bool("h", true, "Help")
+	flag.Parse()
+
+	if *createFlag {
+		createDirectory()
+	} else if *latestEpisodesFlag {
+		intervalForLatestEpisodes()
+	} else if *helpFlag {
+		fmt.Println("-h: Help\n-c: Create directory\n-le: Latest episodes")
+	}
 }
 
 func createDirectory() {
