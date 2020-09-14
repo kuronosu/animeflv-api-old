@@ -43,7 +43,7 @@ type State struct {
 // Anime represents raw data of anime from animeflv
 type Anime struct {
 	// anime_info var of script
-	Flvid           string //OK
+	Flvid           string `bson:"_id"` //OK
 	Name            string //OK
 	Slug            string //OK
 	NextEpisodeDate string //OK

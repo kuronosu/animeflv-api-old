@@ -198,7 +198,7 @@ func setAnimeDataFromScript(a *Anime, script string) {
 		a.Flvid = animeInfo[0]
 		a.Name = animeInfo[1]
 		a.Slug = animeInfo[2]
-		a.URL = AnimeURL("/" + a.Slug)
+		a.URL = "/anime/" + a.Slug
 	}
 	if len(animeInfo) == 4 {
 		a.NextEpisodeDate = animeInfo[3]
