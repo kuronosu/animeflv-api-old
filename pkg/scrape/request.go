@@ -113,3 +113,72 @@ func AllAnimesByPage() (interface{}, []RequestResult, []int) {
 		pages, len(container.Animes), len(errs), time.Since(start)))
 	return container, errs, pagesErr
 }
+
+// FetchLatestEpisodes get the animes with latest episodes
+func FetchLatestEpisodes() ([]LatestEpisode, AnimeSPContainer, error) {
+	doc, err := FetchDocument(AnimeFlvURL)
+	if err != nil {
+		return []LatestEpisode{}, AnimeSPContainer{}, err
+	}
+	var epURLs []string
+	latestEpisodes := GetLatestEpisodes(doc)
+	for _, le := range latestEpisodes {
+		epURLs = append(epURLs, le.URL)
+	}
+	results := AsyncHTTPGetsEpisodes(epURLs, HandleEpisodeScrape)
+	var animeURLs []string
+	for _, result := range results {
+		inList := false
+		animeURL := result.ProcessedResponseData.(string)
+		for _, url := range animeURLs {
+			if url == animeURL {
+				inList = true
+			}
+		}
+		if !inList {
+			animeURLs = append(animeURLs, animeURL)
+		}
+	}
+
+	container := AnimeSPContainer{
+		States: []State{},
+		Types:  []Type{},
+		Genres: []Genre{},
+		Animes: []Anime{},
+	}
+	animeResults := AsyncHTTPGetsAnimes(animeURLs, &container)
+	for _, result := range animeResults {
+		if !result.OK {
+			continue
+		}
+		container.Animes = append(container.Animes, result.ProcessedResponseData.(Anime))
+	}
+	return latestEpisodes, container, nil
+}
+
+// AsyncHTTPGetsEpisodes make request to multiples Urls asynchronously
+func AsyncHTTPGetsEpisodes(urls []string, handle func(RequestResult) interface{}) []*RequestResult {
+	ch := make(chan *RequestResult, len(urls)) // buffered
+	for _, URL := range urls {
+		go func(URL string) {
+			resp, err := http.Get(EpisodeURL(URL))
+			ch <- &RequestResult{Response: resp, URL: URL, ResponseErr: err}
+		}(URL)
+	}
+
+	results := []*RequestResult{}
+	for {
+		select {
+		case result := <-ch:
+			if result.OK = result.ResponseErr == nil; result.OK {
+				result.Document, result.DocumentErr = GetDocument(result.Response, result.URL)
+				result.OK = result.OK && result.DocumentErr == nil
+				result.ProcessedResponseData = handle(*result)
+			}
+			results = append(results, result)
+			if len(results) == len(urls) {
+				return results
+			}
+		}
+	}
+}

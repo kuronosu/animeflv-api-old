@@ -221,3 +221,23 @@ func setEpisodesFromScript(a *Anime, script string) {
 	})
 	a.Episodes = episodes
 }
+
+// GetLatestEpisodes returns the URLs of the latest episodes in Animeflv
+func GetLatestEpisodes(doc *goquery.Document) []LatestEpisode {
+	latestEpisodes := []LatestEpisode{}
+	doc.Find("ul.ListEpisodios").Find("li").Each(func(i int, sec *goquery.Selection) {
+		a := sec.Find("a")
+
+		latestEpisodes = append(latestEpisodes, LatestEpisode{
+			URL:   a.AttrOr("href", ""),
+			Image: a.Find("img").AttrOr("src", ""),
+			Capi:  strings.Trim(a.Find("span.Capi").Text(), " ")})
+	})
+	return latestEpisodes
+	// ListEpisodios
+}
+
+// GetAnimeURLByEpisodeURL return the anime url from the episode page
+func GetAnimeURLByEpisodeURL(doc *goquery.Document) string {
+	return strings.Trim(doc.Find("a.CapNvLs").AttrOr("href", ""), " ")
+}

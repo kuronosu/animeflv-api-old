@@ -26,6 +26,10 @@ func spinner(message string, delay time.Duration) {
 var c chan struct{} = make(chan struct{}) // event marker
 
 func main() {
+	intervalForLatestEpisodes()
+}
+
+func createDirectory() {
 	client, err := db.SetUp()
 	if err != nil {
 		log.Fatal(err)
@@ -66,4 +70,19 @@ func main() {
 	// client, _ := db.SetUp()
 	// s, e := db.GetNextSequence(client, "users2")
 	// fmt.Println(s, e)
+}
+
+func intervalForLatestEpisodes() {
+	client, err := db.SetUp()
+	if err != nil {
+		log.Fatal(err)
+	}
+	for {
+		le, a, e := scrape.FetchLatestEpisodes()
+		if e == nil {
+			db.SetLatestEpisodes(client, le)
+			fmt.Println(db.UpdateOrInsertAnimes(client, a.Animes))
+		}
+		time.Sleep(1 * time.Minute)
+	}
 }

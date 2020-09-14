@@ -83,6 +83,13 @@ type AnimeSPContainer struct {
 	Animes []Anime
 }
 
+// LatestEpisode represent the info of the latest episode
+type LatestEpisode struct {
+	URL   string
+	Image string
+	Capi  string
+}
+
 // NewEpisode create a episode instance
 func NewEpisode(Number float64, Eid int, Flvid string, animeSlug string) Episode {
 	return Episode{

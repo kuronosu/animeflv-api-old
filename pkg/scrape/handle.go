@@ -7,3 +7,11 @@ func HandleAnimeScrape(result RequestResult, container *AnimeSPContainer) interf
 	}
 	return GetAnime(result.Document, &container.States, &container.Types, &container.Genres)
 }
+
+// HandleEpisodeScrape handle the response by scraping the episode page
+func HandleEpisodeScrape(result RequestResult) interface{} {
+	if !result.OK {
+		return ""
+	}
+	return GetAnimeURLByEpisodeURL(result.Document)
+}
