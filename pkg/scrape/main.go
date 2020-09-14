@@ -147,7 +147,7 @@ func getVotes(document *goquery.Document) int {
 }
 
 func getCover(document *goquery.Document) string {
-	return strings.Trim(document.Find("div.AnimeCover").Find("div.Image").Find("img").AttrOr("style", ""), " ")
+	return strings.Trim(document.Find("div.AnimeCover").Find("div.Image").Find("img").AttrOr("src", ""), " ")
 }
 
 func getBanner(document *goquery.Document) string {
@@ -223,12 +223,12 @@ func setEpisodesFromScript(a *Anime, script string) {
 }
 
 // GetLatestEpisodes returns the URLs of the latest episodes in Animeflv
-func GetLatestEpisodes(doc *goquery.Document) []LatestEpisode {
-	latestEpisodes := []LatestEpisode{}
+func GetLatestEpisodes(doc *goquery.Document) []*LatestEpisode {
+	latestEpisodes := []*LatestEpisode{}
 	doc.Find("ul.ListEpisodios").Find("li").Each(func(i int, sec *goquery.Selection) {
 		a := sec.Find("a")
 
-		latestEpisodes = append(latestEpisodes, LatestEpisode{
+		latestEpisodes = append(latestEpisodes, &LatestEpisode{
 			URL:   a.AttrOr("href", ""),
 			Image: a.Find("img").AttrOr("src", ""),
 			Capi:  strings.Trim(a.Find("span.Capi").Text(), " ")})

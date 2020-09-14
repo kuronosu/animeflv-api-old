@@ -42,26 +42,10 @@ func createDirectory() {
 	// <-c // wait spinner stop
 
 	dillDbTime := time.Now()
-	states := make([]interface{}, len(container.States))
-	for i, v := range container.States {
-		states[i] = v
-	}
-	db.InsertStates(client, states)
-	types := make([]interface{}, len(container.Types))
-	for i, v := range container.Types {
-		types[i] = v
-	}
-	db.InsertTypes(client, types)
-	genres := make([]interface{}, len(container.Genres))
-	for i, v := range container.Genres {
-		genres[i] = v
-	}
-	db.InsertGenres(client, genres)
-	animes := make([]interface{}, len(container.Animes))
-	for i, v := range container.Animes {
-		animes[i] = v
-	}
-	insertResult, err := db.InsertAnimes(client, animes)
+	db.InsertStates(client, container.States)
+	db.InsertTypes(client, container.Types)
+	db.InsertGenres(client, container.Genres)
+	insertResult, err := db.InsertAnimes(client, container.Animes)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -81,7 +65,20 @@ func intervalForLatestEpisodes() {
 		le, a, e := scrape.FetchLatestEpisodes()
 		if e == nil {
 			db.SetLatestEpisodes(client, le)
-			fmt.Println(db.UpdateOrInsertAnimes(client, a.Animes))
+			_, in, _ := db.UpdateOrInsertAnimes(client, a.Animes)
+			if len(in) > 0 {
+				relatedURLs := []string{}
+				for _, anime := range in {
+					for _, rel := range anime.Relations {
+						relatedURLs = append(relatedURLs, rel.URL)
+					}
+				}
+				container := scrape.AnimeSPContainer{
+					States: []scrape.State{}, Types: []scrape.Type{},
+					Genres: []scrape.Genre{}, Animes: []scrape.Anime{}}
+				scrape.GetAnimes(relatedURLs, &container)
+				db.UpdateOrInsertAnimes(client, container.Animes)
+			}
 		}
 		time.Sleep(1 * time.Minute)
 	}

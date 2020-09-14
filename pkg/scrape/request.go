@@ -70,6 +70,20 @@ func AsyncHTTPGetsAnimes(urls []string, container *AnimeSPContainer) []*RequestR
 	}
 }
 
+// GetAnimes return the anime and container from urls
+func GetAnimes(urls []string, container *AnimeSPContainer) []RequestResult {
+	results := AsyncHTTPGetsAnimes(urls, container)
+	errs := []RequestResult{}
+	for _, result := range results {
+		if !result.OK {
+			errs = append(errs, *result)
+			continue
+		}
+		container.Animes = append(container.Animes, result.ProcessedResponseData.(Anime))
+	}
+	return errs
+}
+
 // AllAnimesByPage get all the animes by making asynchronous requests one page at a time
 func AllAnimesByPage() (interface{}, []RequestResult, []int) {
 	start := time.Now()
@@ -88,22 +102,12 @@ func AllAnimesByPage() (interface{}, []RequestResult, []int) {
 	for _, page := range MakeRange(1, pages) {
 		start2 := time.Now()
 		urls, err := GetAnimeURLSFromDirectoryPage(page)
-		errcp := 0
-		animeCount := 0
+		prevCount := len(container.Animes)
 		if err == nil {
-			results := AsyncHTTPGetsAnimes(urls, &container)
-			for _, result := range results {
-				if !result.OK {
-					errcp++
-					errs = append(errs, *result)
-					continue
-				}
-				animeCount++
-				container.Animes = append(container.Animes, result.ProcessedResponseData.(Anime))
-			}
-			// time.Sleep(500 * time.Millisecond)
+			erros := GetAnimes(urls, &container)
+			errs = append(errs, erros...)
 			fmt.Fprint(os.Stdout, fmt.Sprintf("\r \rScraped page %d of %d with %d animes and %d errors in %s. Total animes %d in %s",
-				page, pages, animeCount, errcp, time.Since(start2), len(container.Animes), time.Since(start)))
+				page, pages, len(container.Animes)-prevCount, len(erros), time.Since(start2), len(container.Animes), time.Since(start)))
 		} else {
 			pagesErr = append(pagesErr, page)
 		}
@@ -115,10 +119,10 @@ func AllAnimesByPage() (interface{}, []RequestResult, []int) {
 }
 
 // FetchLatestEpisodes get the animes with latest episodes
-func FetchLatestEpisodes() ([]LatestEpisode, AnimeSPContainer, error) {
+func FetchLatestEpisodes() ([]*LatestEpisode, AnimeSPContainer, error) {
 	doc, err := FetchDocument(AnimeFlvURL)
 	if err != nil {
-		return []LatestEpisode{}, AnimeSPContainer{}, err
+		return []*LatestEpisode{}, AnimeSPContainer{}, err
 	}
 	var epURLs []string
 	latestEpisodes := GetLatestEpisodes(doc)
@@ -130,6 +134,13 @@ func FetchLatestEpisodes() ([]LatestEpisode, AnimeSPContainer, error) {
 	for _, result := range results {
 		inList := false
 		animeURL := result.ProcessedResponseData.(string)
+		episodeURL := result.URL
+		// fmt.Println(episodeURL)
+		for _, le := range latestEpisodes {
+			if le.URL == episodeURL {
+				le.Anime = animeURL
+			}
+		}
 		for _, url := range animeURLs {
 			if url == animeURL {
 				inList = true
@@ -152,6 +163,13 @@ func FetchLatestEpisodes() ([]LatestEpisode, AnimeSPContainer, error) {
 			continue
 		}
 		container.Animes = append(container.Animes, result.ProcessedResponseData.(Anime))
+	}
+	for _, le := range latestEpisodes {
+		for _, a := range container.Animes {
+			if a.URL == le.Anime {
+				le.Anime = a.Flvid
+			}
+		}
 	}
 	return latestEpisodes, container, nil
 }

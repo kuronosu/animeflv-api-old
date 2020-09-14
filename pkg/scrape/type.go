@@ -88,6 +88,7 @@ type LatestEpisode struct {
 	URL   string
 	Image string
 	Capi  string
+	Anime string
 }
 
 // NewEpisode create a episode instance
