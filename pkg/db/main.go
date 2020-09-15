@@ -212,3 +212,23 @@ func LoadAnimes(client *mongo.Client) ([]scrape.Anime, error) {
 	cur.Close(ctx)
 	return results, nil
 }
+
+// LoadLatestEpisodes from db
+func LoadLatestEpisodes(client *mongo.Client) ([]scrape.LatestEpisode, error) {
+	coll := client.Database("deguvon").Collection("latestEpisodes")
+	cur, _ := coll.Find(ctx, bson.D{{}}, options.Find())
+	var results []scrape.LatestEpisode
+	for cur.Next(ctx) {
+		var s scrape.LatestEpisode
+		err := cur.Decode(&s)
+		if err != nil {
+			return results, err
+		}
+		results = append(results, s)
+	}
+	if err := cur.Err(); err != nil {
+		return results, err
+	}
+	cur.Close(ctx)
+	return results, nil
+}
