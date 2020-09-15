@@ -12,6 +12,8 @@ import (
 )
 
 var stopSpinner bool
+var stopEllipsis bool
+var c chan struct{} = make(chan struct{}) // event marker
 
 func spinner(message string, delay time.Duration) {
 	for !stopSpinner {
@@ -24,7 +26,16 @@ func spinner(message string, delay time.Duration) {
 	c <- struct{}{}
 }
 
-var c chan struct{} = make(chan struct{}) // event marker
+func ellipsis(message string, delay time.Duration) {
+	for !stopEllipsis {
+		for _, r := range []string{".  ", ".. ", "..."} {
+			fmt.Printf("\r%s %s", message, r)
+			time.Sleep(delay)
+		}
+	}
+	fmt.Fprint(os.Stdout, "\r \r")
+	c <- struct{}{}
+}
 
 func main() {
 	createFlag := flag.Bool("c", false, "Create directory")
@@ -46,12 +57,8 @@ func createDirectory() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	// stopSpinner = false
-	// go spinner("Obteniendo animes", 100*time.Millisecond)
 	containerI, _, _ := scrape.AllAnimesByPage()
 	container := containerI.(scrape.AnimeSPContainer)
-	// stopSpinner = true
-	// <-c // wait spinner stop
 
 	dillDbTime := time.Now()
 	db.InsertStates(client, container.States)
@@ -62,18 +69,18 @@ func createDirectory() {
 		log.Fatal(err)
 	}
 	fmt.Printf("Base de datos llenada en %s con %d animes\n", time.Since(dillDbTime), len(insertResult.InsertedIDs))
-
-	// client, _ := db.SetUp()
-	// s, e := db.GetNextSequence(client, "users2")
-	// fmt.Println(s, e)
 }
 
 func intervalForLatestEpisodes() {
+	fmt.Print("Connect to db")
 	client, err := db.SetUp()
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println("\rConnected    ")
 	for {
+		stopSpinner = false
+		go spinner("Getting latest episodes", 100*time.Millisecond)
 		le, a, e := scrape.FetchLatestEpisodes()
 		if e == nil {
 			db.SetLatestEpisodes(client, le)
@@ -85,13 +92,23 @@ func intervalForLatestEpisodes() {
 						relatedURLs = append(relatedURLs, rel.URL)
 					}
 				}
+				states, _ := db.LoadStates(client)
+				genres, _ := db.LoadGenres(client)
+				types, _ := db.LoadTypes(client)
 				container := scrape.AnimeSPContainer{
-					States: []scrape.State{}, Types: []scrape.Type{},
-					Genres: []scrape.Genre{}, Animes: []scrape.Anime{}}
+					States: states, Types: types,
+					Genres: genres, Animes: []scrape.Anime{}}
 				scrape.GetAnimes(relatedURLs, &container)
 				db.UpdateOrInsertAnimes(client, container.Animes)
 			}
 		}
+		stopSpinner = true
+		<-c // wait spinner stop
+		stopEllipsis = false
+		fmt.Print("                         ")
+		go ellipsis("Waiting", 333*time.Millisecond)
 		time.Sleep(1 * time.Minute)
+		stopEllipsis = true
+		<-c // wait ellipsis stop
 	}
 }

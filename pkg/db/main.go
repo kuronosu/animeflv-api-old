@@ -4,10 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"go.mongodb.org/mongo-driver/bson"
-
 	"github.com/kuronosu/deguvon-server-go/pkg/scrape"
-
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -133,4 +131,84 @@ func UpdateOrInsertAnimes(client *mongo.Client, animes []scrape.Anime) ([]mongo.
 		}
 	}
 	return updateResults, insertedAnimes, errors
+}
+
+// LoadStates from db
+func LoadStates(client *mongo.Client) ([]scrape.State, error) {
+	coll := client.Database("deguvon").Collection("states")
+	cur, _ := coll.Find(ctx, bson.D{{}}, options.Find())
+	var results []scrape.State
+	for cur.Next(ctx) {
+		var s scrape.State
+		err := cur.Decode(&s)
+		if err != nil {
+			return results, err
+		}
+		results = append(results, s)
+	}
+	if err := cur.Err(); err != nil {
+		return results, err
+	}
+	cur.Close(ctx)
+	return results, nil
+}
+
+// LoadTypes from db
+func LoadTypes(client *mongo.Client) ([]scrape.Type, error) {
+	coll := client.Database("deguvon").Collection("types")
+	cur, _ := coll.Find(ctx, bson.D{{}}, options.Find())
+	var results []scrape.Type
+	for cur.Next(ctx) {
+		var s scrape.Type
+		err := cur.Decode(&s)
+		if err != nil {
+			return results, err
+		}
+		results = append(results, s)
+	}
+	if err := cur.Err(); err != nil {
+		return results, err
+	}
+	cur.Close(ctx)
+	return results, nil
+}
+
+// LoadGenres from db
+func LoadGenres(client *mongo.Client) ([]scrape.Genre, error) {
+	coll := client.Database("deguvon").Collection("genres")
+	cur, _ := coll.Find(ctx, bson.D{{}}, options.Find())
+	var results []scrape.Genre
+	for cur.Next(ctx) {
+		var s scrape.Genre
+		err := cur.Decode(&s)
+		if err != nil {
+			return results, err
+		}
+		results = append(results, s)
+	}
+	if err := cur.Err(); err != nil {
+		return results, err
+	}
+	cur.Close(ctx)
+	return results, nil
+}
+
+// LoadAnimes from db
+func LoadAnimes(client *mongo.Client) ([]scrape.Anime, error) {
+	coll := client.Database("deguvon").Collection("animes")
+	cur, _ := coll.Find(ctx, bson.D{{}}, options.Find())
+	var results []scrape.Anime
+	for cur.Next(ctx) {
+		var s scrape.Anime
+		err := cur.Decode(&s)
+		if err != nil {
+			return results, err
+		}
+		results = append(results, s)
+	}
+	if err := cur.Err(); err != nil {
+		return results, err
+	}
+	cur.Close(ctx)
+	return results, nil
 }
