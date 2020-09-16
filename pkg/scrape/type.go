@@ -83,6 +83,14 @@ type AnimeSPContainer struct {
 	Animes []Anime
 }
 
+// Directory contains all directory data
+type Directory struct {
+	States []State
+	Types  []Type
+	Genres []Genre
+	Animes map[string]Anime
+}
+
 // LatestEpisode represent the info of the latest episode
 type LatestEpisode struct {
 	URL   string

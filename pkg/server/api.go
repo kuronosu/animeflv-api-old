@@ -37,6 +37,7 @@ func New(client *mongo.Client) Server {
 	r.HandleFunc("/genres/", a.FetchGenres).Methods(http.MethodGet)
 	r.HandleFunc("/animes/", a.FetchAnimes).Methods(http.MethodGet)
 	r.HandleFunc("/latest/", a.FetchLatestEpisodes).Methods(http.MethodGet)
+	r.HandleFunc("/directory/", a.FetchDirectory).Methods(http.MethodGet)
 	a.router = r
 	return a
 }
