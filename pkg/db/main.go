@@ -2,7 +2,8 @@ package db
 
 import (
 	"context"
-	"fmt"
+	"os"
+	"time"
 
 	"github.com/kuronosu/deguvon-server-go/pkg/scrape"
 	"go.mongodb.org/mongo-driver/bson"
@@ -14,11 +15,14 @@ var ctx = context.TODO()
 
 // SetUp Create mongo client
 func SetUp() (*mongo.Client, error) {
-	host := "localhost"
-	port := 27017
+	connectionString := os.Getenv("MongoConnectionString")
+	if connectionString == "" {
+		connectionString = "mongodb://localhost:27017"
+	}
 
-	clientOpts := options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%d", host, port))
-	client, err := mongo.Connect(ctx, clientOpts)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(connectionString))
 	if err != nil {
 		return nil, err
 	}

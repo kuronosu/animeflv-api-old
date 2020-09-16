@@ -1,2 +1,2 @@
-runtime: go115
-main: ./cmd/deguvon-api/main.go
+runtime: go113  # or go113 or go114 for Go 1.13 or Go 1.14 (beta)
+main: ./cmd/deguvon-api
