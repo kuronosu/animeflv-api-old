@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/kuronosu/deguvon-server-go/pkg/db"
 	"github.com/kuronosu/deguvon-server-go/pkg/server"
@@ -17,5 +18,10 @@ func main() {
 	}
 	fmt.Println("\rConnected    ")
 	s := server.New(client)
-	log.Fatal(http.ListenAndServe(":8080", s.Router()))
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+		log.Printf("Defaulting to port %s", port)
+	}
+	log.Fatal(http.ListenAndServe(":"+port, s.Router()))
 }
