@@ -4,13 +4,24 @@ import (
 	"encoding/json"
 	"html/template"
 	"net/http"
+	"os"
+	"path/filepath"
 
 	"github.com/kuronosu/deguvon-server-go/pkg/db"
 	"github.com/kuronosu/deguvon-server-go/pkg/scrape"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+var tmplPath string
 var dbClient *mongo.Client
+
+func setUpTemplatePath() {
+	ex, err := os.Executable()
+	if err != nil {
+		panic(err)
+	}
+	tmplPath = filepath.Join(filepath.Dir(ex), "tmpl")
+}
 
 func setDbClient(client *mongo.Client) {
 	dbClient = client
@@ -62,8 +73,7 @@ func HandleDirectory(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleIndex(w http.ResponseWriter, r *http.Request) {
-	tmplt, err := template.ParseFiles("tmpl/index.html")
-	// t, err := template.ParseFiles("/pkg/server/templates/index.html")
+	tmplt, err := template.ParseFiles(filepath.Join(tmplPath, "index.html"))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

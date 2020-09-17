@@ -23,6 +23,7 @@ type Server interface {
 // New create new server
 func New(client *mongo.Client) Server {
 	setDbClient(client)
+	setUpTemplatePath()
 	a := &Api{}
 	r := mux.NewRouter()
 	r.Use(func(h http.Handler) http.Handler {
