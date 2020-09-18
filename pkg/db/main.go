@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"time"
 
@@ -81,6 +82,9 @@ func InsertAnimes(client *mongo.Client, animes []scrape.Anime) (*mongo.InsertMan
 
 // SetLatestEpisodes drop the latestEpisodes after insert data in latestEpisodes collection
 func SetLatestEpisodes(client *mongo.Client, latestEpisodes []*scrape.LatestEpisode) (*mongo.InsertManyResult, error) {
+	if len(latestEpisodes) != 20 {
+		return nil, fmt.Errorf("Latest episodes length must be 20, it has %d", len(latestEpisodes))
+	}
 	collection := client.Database("deguvon").Collection("latestEpisodes")
 	e := collection.Drop(ctx)
 	if e != nil {
