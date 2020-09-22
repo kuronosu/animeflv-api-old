@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"path/filepath"
 
+	"github.com/gorilla/mux"
 	"github.com/kuronosu/animeflv-api/pkg/db"
 	"github.com/kuronosu/animeflv-api/pkg/scrape"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -114,4 +115,14 @@ func HandleIndex(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	tmplt.Execute(w, AllPathsWithoutIndex)
+}
+
+func HandleAnimeDetails(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	anime, err := db.LoadOneAnime(dbClient, vars["flvid"])
+	if err != nil {
+		http.Error(w, "404 page not found", http.StatusNotFound)
+		return
+	}
+	JSONResponse(w, anime, http.StatusOK)
 }
