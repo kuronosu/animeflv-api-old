@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/kuronosu/deguvon-server-go/pkg/scrape"
+	"github.com/kuronosu/animeflv-api/pkg/scrape"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"

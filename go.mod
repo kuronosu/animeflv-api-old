@@ -1,4 +1,4 @@
-module github.com/kuronosu/deguvon-server-go
+module github.com/kuronosu/animeflv-api
 
 go 1.15
 

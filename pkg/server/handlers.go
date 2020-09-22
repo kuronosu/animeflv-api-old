@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"path/filepath"
 
-	"github.com/kuronosu/deguvon-server-go/pkg/db"
-	"github.com/kuronosu/deguvon-server-go/pkg/scrape"
+	"github.com/kuronosu/animeflv-api/pkg/db"
+	"github.com/kuronosu/animeflv-api/pkg/scrape"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 

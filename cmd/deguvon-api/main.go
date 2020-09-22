@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/kuronosu/deguvon-server-go/pkg/db"
-	"github.com/kuronosu/deguvon-server-go/pkg/server"
+	"github.com/kuronosu/animeflv-api/pkg/db"
+	"github.com/kuronosu/animeflv-api/pkg/server"
 )
 
 func main() {

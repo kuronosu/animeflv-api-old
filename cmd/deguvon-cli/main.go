@@ -7,8 +7,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/kuronosu/deguvon-server-go/pkg/db"
-	"github.com/kuronosu/deguvon-server-go/pkg/scrape"
+	"github.com/kuronosu/animeflv-api/pkg/db"
+	"github.com/kuronosu/animeflv-api/pkg/scrape"
 )
 
 var stopSpinner bool
