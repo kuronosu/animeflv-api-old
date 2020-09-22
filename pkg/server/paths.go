@@ -4,22 +4,22 @@ package server
 const IndexPath = "/"
 
 // TypesPath uri
-const TypesPath = "/types/"
+const TypesPath = "/api/types/"
 
 // StatesPath uri
-const StatesPath = "/states/"
+const StatesPath = "/api/states/"
 
 // GenresPath uri
-const GenresPath = "/genres/"
+const GenresPath = "/api/genres/"
 
 // AnimesPath uri
-const AnimesPath = "/animes/"
+const AnimesPath = "/api/animes/"
 
 // LatestEpisodesPath uri
-const LatestEpisodesPath = "/latest/"
+const LatestEpisodesPath = "/api/latest/"
 
 // DirectoryPath uri
-const DirectoryPath = "/directory/"
+const DirectoryPath = "/api/directory/"
 
 // AllPaths array with all paths (uris)
 var AllPaths = []string{IndexPath, TypesPath, StatesPath, GenresPath, AnimesPath, LatestEpisodesPath, DirectoryPath}
