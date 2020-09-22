@@ -164,8 +164,11 @@ func LoadStates(client *mongo.Client) ([]scrape.State, error) {
 // LoadTypes from db
 func LoadTypes(client *mongo.Client) ([]scrape.Type, error) {
 	coll := client.Database("deguvon").Collection("types")
-	cur, _ := coll.Find(ctx, bson.D{{}}, options.Find())
 	var results []scrape.Type
+	cur, err := coll.Find(ctx, bson.D{{}}, options.Find())
+	if err != nil {
+		return results, err
+	}
 	for cur.Next(ctx) {
 		var s scrape.Type
 		err := cur.Decode(&s)

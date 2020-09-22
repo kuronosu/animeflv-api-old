@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -20,17 +19,25 @@ type Server interface {
 	Router() http.Handler
 }
 
+func LogMiddleware(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		wc := NewResponseWriterCounter(w)
+		h.ServeHTTP(wc, r)
+		fmt.Printf("%s %s %s %d %d\n",
+			wc.Started().Format("2006-01-02 15:04:05"),
+			r.URL,
+			r.Method,
+			wc.StatusCode(),
+			wc.Count())
+	})
+}
+
 // New create new server
 func New(client *mongo.Client) Server {
 	setDbClient(client)
 	a := &Api{}
 	r := mux.NewRouter()
-	r.Use(func(h http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			fmt.Printf("%s %s %s\n", r.URL, r.Method, time.Now().Format("2006-01-02 15:04:05"))
-			h.ServeHTTP(w, r)
-		})
-	})
+	r.Use(LogMiddleware)
 	r.HandleFunc(IndexPath, HandleIndex).Methods(http.MethodGet)
 	r.HandleFunc(TypesPath, HandleTypes).Methods(http.MethodGet)
 	r.HandleFunc(StatesPath, HandleStates).Methods(http.MethodGet)
