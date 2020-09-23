@@ -32,3 +32,23 @@ func assembleAnimesPageLink(result db.PaginatedAnimeResult, next bool) *string {
 	}
 	return &newURI
 }
+
+var animeOrderOptions = [...]string{"name", "state", "score", "votes",
+	"-name", "-state", "-score", "-votes"}
+
+func validSortField(field string) (string, int) {
+	if field == "flvid" {
+		return "_id", 1
+	} else if field == "-flvid" {
+		return "_id", -1
+	}
+	for index, op := range animeOrderOptions {
+		if op == field {
+			if index >= 4 {
+				return op[1:], -1
+			}
+			return op, 1
+		}
+	}
+	return "_id", 1
+}

@@ -56,7 +56,8 @@ func (api *API) HandleGenres(w http.ResponseWriter, r *http.Request) {
 func (api *API) HandleAnimes(w http.ResponseWriter, r *http.Request) {
 	rawPage := r.URL.Query().Get("page")
 	page, _ := strconv.Atoi(rawPage)
-	result, err := db.LoadAnimes(api.DB, page)
+	sortField, sortValue := validSortField(r.URL.Query().Get("order"))
+	result, err := db.LoadAnimes(api.DB, page, sortField, sortValue)
 	if len(result.Animes) == 0 || err != nil {
 		InternalError(w, "Error al cargar datos")
 		return
