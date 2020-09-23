@@ -8,7 +8,8 @@ import (
 	"github.com/kuronosu/animeflv-api/pkg/db"
 )
 
-func internalError(w http.ResponseWriter, err string) {
+// InternalError make an json response with error message
+func InternalError(w http.ResponseWriter, err string) {
 	JSONResponse(w, ErrorResponse{err, http.StatusInternalServerError}, http.StatusInternalServerError)
 }
 

@@ -20,6 +20,7 @@ func LogMiddleware(h http.Handler) http.Handler {
 	})
 }
 
+// CaselessMatcher modify the request url path to be case insensitive and add / at the end if it is not already
 func CaselessMatcher(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		r.URL.Path = strings.ToLower(r.URL.Path)
