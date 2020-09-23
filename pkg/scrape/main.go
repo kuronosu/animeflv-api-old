@@ -195,7 +195,7 @@ func setAnimeDataFromScript(a *Anime, script string) {
 	var animeInfo []string
 	_ = json.Unmarshal([]byte(rawAnimeInfo), &animeInfo)
 	if len(animeInfo) > 0 && len(animeInfo) <= 4 {
-		a.Flvid = animeInfo[0]
+		a.Flvid, _ = strconv.Atoi(animeInfo[0])
 		a.Name = animeInfo[1]
 		a.Slug = animeInfo[2]
 		a.URL = "/anime/" + a.Slug

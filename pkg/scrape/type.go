@@ -43,7 +43,7 @@ type State struct {
 // Anime represents raw data of anime from animeflv
 type Anime struct {
 	// anime_info var of script
-	Flvid           string `bson:"_id"` //OK
+	Flvid           int    `bson:"_id"` //OK
 	Name            string //OK
 	Slug            string //OK
 	NextEpisodeDate string //OK
@@ -88,7 +88,7 @@ type Directory struct {
 	States []State
 	Types  []Type
 	Genres []Genre
-	Animes map[string]Anime
+	Animes map[int]Anime
 }
 
 // LatestEpisode represent the info of the latest episode
@@ -96,16 +96,16 @@ type LatestEpisode struct {
 	URL   string
 	Image string
 	Capi  string
-	Anime string
+	Anime int
 }
 
 // NewEpisode create a episode instance
-func NewEpisode(Number float64, Eid int, Flvid string, animeSlug string) Episode {
+func NewEpisode(Number float64, Eid int, Flvid int, animeSlug string) Episode {
 	return Episode{
 		Number: Number,
 		Eid:    Eid,
 		URL:    fmt.Sprintf("/ver/%s-%s", animeSlug, FloatToString(Number)),
-		Img:    fmt.Sprintf("https://cdn.animeflv.net/screenshots/%s/%s/th_3.jpg", Flvid, FloatToString(Number)),
+		Img:    fmt.Sprintf("https://cdn.animeflv.net/screenshots/%d/%s/th_3.jpg", Flvid, FloatToString(Number)),
 	}
 }
 

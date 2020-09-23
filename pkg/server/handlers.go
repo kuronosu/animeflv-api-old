@@ -62,7 +62,7 @@ func HandleGenres(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleAnimes(w http.ResponseWriter, r *http.Request) {
-	animes, _ := db.LoadAnimes(dbClient)
+	animes, _, _ := db.LoadAnimes(dbClient, 0)
 	if len(animes) == 0 {
 		internalError(w, "Error al cargar datos")
 		return
@@ -95,12 +95,12 @@ func HandleDirectory(w http.ResponseWriter, r *http.Request) {
 		internalError(w, "Error al cargar datos")
 		return
 	}
-	animes, _ := db.LoadAnimes(dbClient)
+	animes, _ := db.LoadAllAnimes(dbClient)
 	if len(animes) == 0 {
 		internalError(w, "Error al cargar datos")
 		return
 	}
-	animesMap := make(map[string]scrape.Anime)
+	animesMap := make(map[int]scrape.Anime)
 	for _, anime := range animes {
 		animesMap[anime.Flvid] = anime
 	}

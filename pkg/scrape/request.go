@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -138,7 +140,7 @@ func FetchLatestEpisodes() ([]*LatestEpisode, AnimeSPContainer, error) {
 		// fmt.Println(episodeURL)
 		for _, le := range latestEpisodes {
 			if le.URL == episodeURL {
-				le.Anime = animeURL
+				le.Anime, _ = strconv.Atoi(strings.ReplaceAll(strings.Split(le.URL, "/")[4], ".jpg", ""))
 			}
 		}
 		for _, url := range animeURLs {
@@ -164,13 +166,13 @@ func FetchLatestEpisodes() ([]*LatestEpisode, AnimeSPContainer, error) {
 		}
 		container.Animes = append(container.Animes, result.ProcessedResponseData.(Anime))
 	}
-	for _, le := range latestEpisodes {
-		for _, a := range container.Animes {
-			if a.URL == le.Anime {
-				le.Anime = a.Flvid
-			}
-		}
-	}
+	// for _, le := range latestEpisodes {
+	// 	for _, a := range container.Animes {
+	// 		if a.URL == strconv.Itoa(le.Anime) {
+	// 			le.Anime = a.Flvid
+	// 		}
+	// 	}
+	// }
 	return latestEpisodes, container, nil
 }
 

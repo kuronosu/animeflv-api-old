@@ -204,8 +204,32 @@ func LoadGenres(client *mongo.Client) ([]scrape.Genre, error) {
 	return results, nil
 }
 
-// LoadAnimes from db
-func LoadAnimes(client *mongo.Client) ([]scrape.Anime, error) {
+// LoadAnimes from db with pagination
+func LoadAnimes(client *mongo.Client, page int) ([]scrape.Anime, int64, error) {
+	coll := client.Database("deguvon").Collection("animes")
+	dataCount, err := coll.CountDocuments(context.TODO(), bson.D{{}})
+	var results []scrape.Anime
+	if err != nil {
+		return results, dataCount, err
+	}
+	cur, _ := coll.Find(ctx, bson.D{{}}, options.Find())
+	for cur.Next(ctx) {
+		var s scrape.Anime
+		err := cur.Decode(&s)
+		if err != nil {
+			return results, dataCount, err
+		}
+		results = append(results, s)
+	}
+	if err := cur.Err(); err != nil {
+		return results, dataCount, err
+	}
+	cur.Close(ctx)
+	return results, dataCount, nil
+}
+
+// LoadAllAnimes from db
+func LoadAllAnimes(client *mongo.Client) ([]scrape.Anime, error) {
 	coll := client.Database("deguvon").Collection("animes")
 	cur, _ := coll.Find(ctx, bson.D{{}}, options.Find())
 	var results []scrape.Anime
