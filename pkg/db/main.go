@@ -206,7 +206,7 @@ func LoadGenres(client *mongo.Client) ([]scrape.Genre, error) {
 }
 
 // LoadAnimes from db with pagination
-func LoadAnimes(client *mongo.Client, page int, sortField string, sortValue int) (PaginatedAnimeResult, error) {
+func LoadAnimes(client *mongo.Client, opts Options) (PaginatedAnimeResult, error) {
 	coll := client.Database("deguvon").Collection("animes")
 	animeCount, err := coll.CountDocuments(context.TODO(), bson.D{{}})
 	if err != nil {
@@ -217,22 +217,22 @@ func LoadAnimes(client *mongo.Client, page int, sortField string, sortValue int)
 	if int(animeCount)%pageSize > 0 {
 		totalPageCount++
 	}
-	if page > totalPageCount {
-		page = totalPageCount
-	} else if page < 1 {
-		page = 1
+	if opts.Page > totalPageCount {
+		opts.Page = totalPageCount
+	} else if opts.Page < 1 {
+		opts.Page = 1
 	}
 	result := PaginatedAnimeResult{
-		Page:       page,
+		Page:       opts.Page,
 		TotalPages: totalPageCount,
 		Count:      int(animeCount),
 		Animes:     []scrape.Anime{}}
 
-	opts := options.Find()
-	opts.SetLimit(pageSize)
-	opts.SetSkip(int64((page - 1) * pageSize))
-	opts.SetSort(bson.D{primitive.E{Key: sortField, Value: sortValue}})
-	cur, _ := coll.Find(ctx, bson.D{{}}, opts)
+	op := options.Find()
+	op.SetLimit(pageSize)
+	op.SetSkip(int64((opts.Page - 1) * pageSize))
+	op.SetSort(bson.D{primitive.E{Key: opts.SortField, Value: opts.SortValue}})
+	cur, _ := coll.Find(ctx, bson.D{{}}, op)
 	for cur.Next(ctx) {
 		var a scrape.Anime
 		err := cur.Decode(&a)

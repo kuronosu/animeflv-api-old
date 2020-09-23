@@ -57,7 +57,8 @@ func (api *API) HandleAnimes(w http.ResponseWriter, r *http.Request) {
 	rawPage := r.URL.Query().Get("page")
 	page, _ := strconv.Atoi(rawPage)
 	sortField, sortValue := validSortField(r.URL.Query().Get("order"))
-	result, err := db.LoadAnimes(api.DB, page, sortField, sortValue)
+	options := db.Options{Page: page, SortField: sortField, SortValue: sortValue}
+	result, err := db.LoadAnimes(api.DB, options)
 	if len(result.Animes) == 0 || err != nil {
 		InternalError(w, "Error al cargar datos")
 		return
@@ -65,8 +66,8 @@ func (api *API) HandleAnimes(w http.ResponseWriter, r *http.Request) {
 	JSONResponse(w, AnimesResponse{
 		Count:    result.Count,
 		Results:  result.Animes,
-		Next:     assembleAnimesPageLink(result, true),
-		Previous: assembleAnimesPageLink(result, false)}, http.StatusOK)
+		Next:     assembleAnimesPageLink(result, true, options),
+		Previous: assembleAnimesPageLink(result, false, options)}, http.StatusOK)
 }
 
 // HandleAnimeDetails manage the anime details endpoint

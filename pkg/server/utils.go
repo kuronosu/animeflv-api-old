@@ -18,10 +18,25 @@ func JSONResponse(w http.ResponseWriter, data interface{}, code int) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.WriteHeader(code)
-	json.NewEncoder(w).Encode(data)
+	encoder := json.NewEncoder(w)
+	encoder.SetEscapeHTML(false)
+	encoder.Encode(data)
 }
 
-func assembleAnimesPageLink(result db.PaginatedAnimeResult, next bool) *string {
+func formatOptions(options db.Options) string {
+	if options.SortField == "_id" && options.SortValue == 1 {
+		return ""
+	}
+	if options.SortField == "_id" {
+		options.SortField = "flvid"
+	}
+	if options.SortValue >= 0 {
+		return "&order=" + options.SortField
+	}
+	return "&order=-" + options.SortField
+}
+
+func assembleAnimesPageLink(result db.PaginatedAnimeResult, next bool, options db.Options) *string {
 	newURI := AnimesPath + "?page=%d"
 	if next && result.Page < result.TotalPages {
 		newURI = fmt.Sprintf(newURI, result.Page+1)
@@ -30,6 +45,7 @@ func assembleAnimesPageLink(result db.PaginatedAnimeResult, next bool) *string {
 	} else {
 		return nil
 	}
+	newURI = newURI + formatOptions(options)
 	return &newURI
 }
 
