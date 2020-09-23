@@ -146,7 +146,8 @@ func HandleIndex(w http.ResponseWriter, r *http.Request) {
 
 func HandleAnimeDetails(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	anime, err := db.LoadOneAnime(dbClient, vars["flvid"])
+	flvid, _ := strconv.Atoi(vars["flvid"])
+	anime, err := db.LoadOneAnime(dbClient, flvid)
 	if err != nil {
 		http.Error(w, "404 page not found", http.StatusNotFound)
 		return

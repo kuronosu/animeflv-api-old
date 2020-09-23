@@ -269,7 +269,7 @@ func LoadAllAnimes(client *mongo.Client) ([]scrape.Anime, error) {
 }
 
 // LoadOneAnime from db
-func LoadOneAnime(client *mongo.Client, flvid string) (scrape.Anime, error) {
+func LoadOneAnime(client *mongo.Client, flvid int) (scrape.Anime, error) {
 	var result scrape.Anime
 	coll := client.Database("deguvon").Collection("animes")
 	err := coll.FindOne(ctx, bson.M{"_id": flvid}).Decode(&result)

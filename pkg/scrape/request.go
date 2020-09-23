@@ -140,7 +140,7 @@ func FetchLatestEpisodes() ([]*LatestEpisode, AnimeSPContainer, error) {
 		// fmt.Println(episodeURL)
 		for _, le := range latestEpisodes {
 			if le.URL == episodeURL {
-				le.Anime, _ = strconv.Atoi(strings.ReplaceAll(strings.Split(le.URL, "/")[4], ".jpg", ""))
+				le.Anime, _ = strconv.Atoi(strings.ReplaceAll(strings.Split(le.Image, "/")[4], ".jpg", ""))
 			}
 		}
 		for _, url := range animeURLs {
