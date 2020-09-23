@@ -1,6 +1,8 @@
 package server
 
 import (
+	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/kuronosu/animeflv-api/pkg/scrape"
@@ -10,17 +12,25 @@ import (
 // API represents the api
 type API struct {
 	router http.Handler
+	port   int
 	DB     *mongo.Client
 }
 
 // Server represents the api
 type Server interface {
 	Router() http.Handler
+	Run() error
 }
 
 // Router return the api router
 func (a *API) Router() http.Handler {
 	return CaselessMatcher(a.router)
+}
+
+// Run start the server
+func (a *API) Run() error {
+	log.Printf("Listen to :%d", a.port)
+	return http.ListenAndServe(fmt.Sprint(":", a.port), a.Router())
 }
 
 // ErrorResponse rendered in json

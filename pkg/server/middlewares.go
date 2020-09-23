@@ -1,7 +1,7 @@
 package server
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -11,8 +11,7 @@ func LogMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		wc := NewResponseWriterCounter(w)
 		h.ServeHTTP(wc, r)
-		fmt.Printf("%s %s %s %d %d\n",
-			wc.Started().Format("2006-01-02 15:04:05"),
+		log.Printf("%s %s %d %d\n",
 			r.URL,
 			r.Method,
 			wc.StatusCode(),

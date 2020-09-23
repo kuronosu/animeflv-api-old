@@ -8,8 +8,8 @@ import (
 )
 
 // New create new server
-func New(client *mongo.Client) Server {
-	a := &API{DB: client}
+func New(client *mongo.Client, port int) Server {
+	a := &API{DB: client, port: port}
 	r := mux.NewRouter()
 	r.Use(LogMiddleware)
 	r.HandleFunc(IndexPath, a.HandleIndex).Methods(http.MethodGet)
