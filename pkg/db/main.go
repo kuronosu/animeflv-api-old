@@ -8,6 +8,7 @@ import (
 
 	"github.com/kuronosu/animeflv-api/pkg/scrape"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -205,27 +206,46 @@ func LoadGenres(client *mongo.Client) ([]scrape.Genre, error) {
 }
 
 // LoadAnimes from db with pagination
-func LoadAnimes(client *mongo.Client, page int) ([]scrape.Anime, int64, error) {
+func LoadAnimes(client *mongo.Client, page int) (PaginatedAnimeResult, error) {
 	coll := client.Database("deguvon").Collection("animes")
-	dataCount, err := coll.CountDocuments(context.TODO(), bson.D{{}})
-	var results []scrape.Anime
+	animeCount, err := coll.CountDocuments(context.TODO(), bson.D{{}})
 	if err != nil {
-		return results, dataCount, err
+		return PaginatedAnimeResult{}, err
 	}
-	cur, _ := coll.Find(ctx, bson.D{{}}, options.Find())
+	const pageSize = 24
+	totalPageCount := int(animeCount) / pageSize
+	if int(animeCount)%pageSize > 0 {
+		totalPageCount++
+	}
+	if page > totalPageCount {
+		page = totalPageCount
+	} else if page < 1 {
+		page = 1
+	}
+	result := PaginatedAnimeResult{
+		Page:       page,
+		TotalPages: totalPageCount,
+		Count:      int(animeCount),
+		Animes:     []scrape.Anime{}}
+
+	opts := options.Find()
+	opts.SetLimit(pageSize)
+	opts.SetSkip(int64((page - 1) * pageSize))
+	opts.SetSort(bson.D{primitive.E{Key: "_id", Value: 1}})
+	cur, _ := coll.Find(ctx, bson.D{{}}, opts)
 	for cur.Next(ctx) {
-		var s scrape.Anime
-		err := cur.Decode(&s)
+		var a scrape.Anime
+		err := cur.Decode(&a)
 		if err != nil {
-			return results, dataCount, err
+			return result, err
 		}
-		results = append(results, s)
+		result.Animes = append(result.Animes, a)
 	}
 	if err := cur.Err(); err != nil {
-		return results, dataCount, err
+		return result, err
 	}
 	cur.Close(ctx)
-	return results, dataCount, nil
+	return result, nil
 }
 
 // LoadAllAnimes from db

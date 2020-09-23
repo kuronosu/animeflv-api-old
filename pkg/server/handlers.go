@@ -2,9 +2,11 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"net/http"
 	"path/filepath"
+	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/kuronosu/animeflv-api/pkg/db"
@@ -15,6 +17,13 @@ import (
 type ErrorResponse struct {
 	Error      string `json:"error"`
 	StatusCode int    `json:"statusCode"`
+}
+
+type AnimesResponse struct {
+	Count    int            `json:"count"`
+	Next     *string        `json:"next"`
+	Previous *string        `json:"previous"`
+	Results  []scrape.Anime `json:"results"`
 }
 
 func internalError(w http.ResponseWriter, err string) {
@@ -61,13 +70,31 @@ func HandleGenres(w http.ResponseWriter, r *http.Request) {
 	JSONResponse(w, genres, http.StatusOK)
 }
 
+func assembleAnimesPageLink(result db.PaginatedAnimeResult, next bool) *string {
+	newURI := AnimesPath + "?page=%d"
+	if next && result.Page < result.TotalPages {
+		newURI = fmt.Sprintf(newURI, result.Page+1)
+	} else if !next && result.Page >= 2 {
+		newURI = fmt.Sprintf(newURI, result.Page-1)
+	} else {
+		return nil
+	}
+	return &newURI
+}
+
 func HandleAnimes(w http.ResponseWriter, r *http.Request) {
-	animes, _, _ := db.LoadAnimes(dbClient, 0)
-	if len(animes) == 0 {
+	rawPage := r.URL.Query().Get("page")
+	page, _ := strconv.Atoi(rawPage)
+	result, err := db.LoadAnimes(dbClient, page)
+	if len(result.Animes) == 0 || err != nil {
 		internalError(w, "Error al cargar datos")
 		return
 	}
-	JSONResponse(w, animes, http.StatusOK)
+	JSONResponse(w, AnimesResponse{
+		Count:    result.Count,
+		Results:  result.Animes,
+		Next:     assembleAnimesPageLink(result, true),
+		Previous: assembleAnimesPageLink(result, false)}, http.StatusOK)
 }
 
 func HandleLatestEpisodes(w http.ResponseWriter, r *http.Request) {
