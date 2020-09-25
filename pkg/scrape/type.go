@@ -9,59 +9,59 @@ import (
 
 // Relation represents raw relation between 2 animes
 type Relation struct {
-	Name string //OK
-	URL  string //OK
-	Rel  string //OK
+	Name string `json:"name"`
+	URL  string `json:"url"`
+	Rel  string `json:"rel"`
 }
 
 // Episode represents raw data of episode from animeflv
 type Episode struct {
-	Number float64
-	Eid    int
-	URL    string
-	Img    string
+	Number float64 `json:"number"`
+	Eid    int     `json:"eid"`
+	URL    string  `json:"url"`
+	Img    string  `json:"img"`
 }
 
 // Genre represents series genre
 type Genre struct {
-	ID   int `bson:"_id"`
-	Name string
+	ID   int    `bson:"_id" json:"id"`
+	Name string `json:"name"`
 }
 
 // Type represents series type
 type Type struct {
-	ID   int `bson:"_id"`
-	Name string
+	ID   int    `bson:"_id" json:"id"`
+	Name string `json:"name"`
 }
 
 // State represents anime state
 type State struct {
-	ID   int `bson:"_id"`
-	Name string
+	ID   int    `bson:"_id" json:"id"`
+	Name string `json:"name"`
 }
 
 // Anime represents raw data of anime from animeflv
 type Anime struct {
 	// anime_info var of script
-	Flvid           int    `bson:"_id"` //OK
-	Name            string //OK
-	Slug            string //OK
-	NextEpisodeDate string //OK
+	Flvid           int    `bson:"_id" json:"flvid"` //OK
+	Name            string `json:"name"`
+	Slug            string `json:"slug"`
+	NextEpisodeDate string `json:"nextEpisodeDate"`
 	// Other anime info
-	URL        string   //OK
-	State      int      //OK
-	Type       int      //OK
-	Genres     []int    //OK
-	OtherNames []string //OK
-	Synopsis   string   //OK
-	Score      float64  //OK
-	Votes      int      //OK
+	URL        string   `json:"url"`
+	State      int      `json:"state"`
+	Type       int      `json:"type"`
+	Genres     []int    `json:"genres"`
+	OtherNames []string `json:"otherNames"`
+	Synopsis   string   `json:"synopsis"`
+	Score      float64  `json:"score"`
+	Votes      int      `json:"votes"`
 	// Images
-	Cover  string //OK
-	Banner string //OK
+	Cover  string `json:"cover"`
+	Banner string `json:"banner"`
 	// Relations
-	Relations []Relation //OK
-	Episodes  []Episode
+	Relations []Relation `json:"relations"`
+	Episodes  []Episode  `json:"episodes"`
 }
 
 // RequestResult contains the response, document and the processed data
