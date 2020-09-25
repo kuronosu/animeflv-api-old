@@ -46,3 +46,11 @@ type AnimesResponse struct {
 	Previous *string        `json:"previous"`
 	Results  []scrape.Anime `json:"results"`
 }
+
+// EpisodesResponse rendered episode data with extra anime data in json
+type EpisodesResponse struct {
+	AnimeID   int              `json:"animeID"`
+	AnimeName string           `json:"animeName"`
+	AnimeURL  string           `json:"animeURL"`
+	Episodes  []scrape.Episode `json:"episodes"`
+}

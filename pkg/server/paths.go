@@ -1,28 +1,31 @@
 package server
 
-// IndexPath uri
+// IndexPath uri endpoint
 const IndexPath = "/"
 
-// TypesPath uri
+// TypesPath uri endpoint
 const TypesPath = "/api/types/"
 
-// StatesPath uri
+// StatesPath uri endpoint
 const StatesPath = "/api/states/"
 
-// GenresPath uri
+// GenresPath uri endpoint
 const GenresPath = "/api/genres/"
 
-// AnimesPath uri
+// AnimesPath uri endpoint
 const AnimesPath = "/api/animes/"
 
-// LatestEpisodesPath uri
+// LatestEpisodesPath uri endpoint
 const LatestEpisodesPath = "/api/latest/"
 
-// DirectoryPath uri
+// DirectoryPath uri endpoint
 const DirectoryPath = "/api/directory/"
 
-// AnimeDetailsPath uri
+// AnimeDetailsPath uri endpoint
 const AnimeDetailsPath = "/api/animes/{flvid:[0-9]+}/"
+
+// EpisodeDetailsPath uri endpoint
+const EpisodeDetailsPath = AnimeDetailsPath + "episodes/"
 
 // AllPaths array with all paths (uris)
 var AllPaths = []string{IndexPath, TypesPath, StatesPath, GenresPath, AnimesPath, LatestEpisodesPath, DirectoryPath}

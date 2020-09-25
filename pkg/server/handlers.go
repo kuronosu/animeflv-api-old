@@ -82,7 +82,7 @@ func (api *API) HandleAnimeDetails(w http.ResponseWriter, r *http.Request) {
 	JSONResponse(w, anime, http.StatusOK)
 }
 
-// HandleLatestEpisodes manage the  latest episodes endpoint
+// HandleLatestEpisodes manage the latest episodes endpoint
 func (api *API) HandleLatestEpisodes(w http.ResponseWriter, r *http.Request) {
 	latestEpisodes, _ := db.LoadLatestEpisodes(api.DB)
 	if len(latestEpisodes) == 0 {
@@ -119,4 +119,17 @@ func (api *API) HandleDirectory(w http.ResponseWriter, r *http.Request) {
 		animesMap[anime.Flvid] = anime
 	}
 	JSONResponse(w, scrape.Directory{States: states, Types: types, Genres: genres, Animes: animesMap}, http.StatusOK)
+}
+
+// HandleEpisodeDetails manage the episodes endpoint
+func (api *API) HandleEpisodeDetails(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	flvid, _ := strconv.Atoi(vars["flvid"])
+	anime, err := db.LoadOneAnime(api.DB, flvid)
+	if err != nil {
+		http.Error(w, "404 page not found", http.StatusNotFound)
+		return
+	}
+	JSONResponse(w, EpisodesResponse{AnimeID: anime.Flvid, AnimeName: anime.Name,
+		AnimeURL: anime.URL, Episodes: anime.Episodes}, http.StatusOK)
 }
