@@ -24,8 +24,11 @@ const DirectoryPath = "/api/directory/"
 // AnimeDetailsPath uri endpoint
 const AnimeDetailsPath = "/api/animes/{flvid:[0-9]+}/"
 
+// EpisodeListPath uri endpoint
+const EpisodeListPath = AnimeDetailsPath + "episodes/"
+
 // EpisodeDetailsPath uri endpoint
-const EpisodeDetailsPath = AnimeDetailsPath + "episodes/"
+const EpisodeDetailsPath = EpisodeListPath + `{eNumber}/`
 
 // AllPaths array with all paths (uris)
 var AllPaths = []string{IndexPath, TypesPath, StatesPath, GenresPath, AnimesPath, LatestEpisodesPath, DirectoryPath}
