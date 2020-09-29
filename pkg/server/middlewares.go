@@ -23,9 +23,6 @@ func LogMiddleware(h http.Handler) http.Handler {
 func CaselessMatcher(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		r.URL.Path = strings.ToLower(r.URL.Path)
-		if !strings.HasSuffix(r.URL.Path, "/") {
-			r.URL.Path = r.URL.Path + "/"
-		}
 		next.ServeHTTP(w, r)
 	})
 }
