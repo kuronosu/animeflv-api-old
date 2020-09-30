@@ -12,6 +12,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+var baseTemplate = filepath.Join("tmpl", "base.html")
+
 func getAnime(r *http.Request, client *mongo.Client) (scrape.Anime, error) {
 	vars := mux.Vars(r)
 	flvid, err := strconv.Atoi(vars["flvid"])
@@ -23,13 +25,26 @@ func getAnime(r *http.Request, client *mongo.Client) (scrape.Anime, error) {
 
 // HandleIndex manage the index route
 func (api *API) HandleIndex(w http.ResponseWriter, r *http.Request) {
-	tmplt, err := template.ParseFiles(filepath.Join("tmpl", "index.html"))
+	tmplt, err := template.ParseFiles(filepath.Join("tmpl", "index.html"), baseTemplate)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	tmplt.Execute(w, AllPathsWithoutIndex)
+	tmplt.ExecuteTemplate(w, "base", nil)
+	// tmplt.Execute(w, AllPathsWithoutIndex)
+}
+
+// HandleAPIIndex manage the api base route
+func (api *API) HandleAPIIndex(w http.ResponseWriter, r *http.Request) {
+	tmplt, err := template.ParseFiles(filepath.Join("tmpl", "api_index.html"), baseTemplate)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	tmplt.ExecuteTemplate(w, "base", AllPathsWithoutIndex)
+	// tmplt.Execute(w, AllPathsWithoutIndex)
 }
 
 // HandleTypes manage the types endpoint
