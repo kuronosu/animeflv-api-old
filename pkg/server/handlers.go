@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"html/template"
 	"net/http"
 	"path/filepath"
@@ -21,6 +22,27 @@ func getAnime(r *http.Request, client *mongo.Client) (scrape.Anime, error) {
 		return scrape.Anime{}, err
 	}
 	return db.LoadOneAnime(client, flvid)
+}
+
+func getEpisode(r *http.Request, client *mongo.Client) (*EpisodeResponse, error) {
+	eNumber, err := strconv.ParseFloat(mux.Vars(r)["eNumber"], 64)
+	if err != nil {
+		return nil, err
+	}
+	if eNumber < 0 {
+		return nil, errors.New("The episode number must be greater than or equal to zero")
+	}
+	anime, err := getAnime(r, client)
+	if err != nil {
+		return nil, err
+	}
+	for _, episode := range anime.Episodes {
+		if episode.Number == eNumber {
+			return &EpisodeResponse{AnimeID: anime.Flvid, AnimeName: anime.Name,
+				AnimeURL: anime.URL, Episode: episode}, nil
+		}
+	}
+	return nil, errors.New("Episode not found")
 }
 
 // HandleIndex manage the index route
@@ -99,7 +121,7 @@ func (api *API) HandleAnimes(w http.ResponseWriter, r *http.Request) {
 func (api *API) HandleAnimeDetails(w http.ResponseWriter, r *http.Request) {
 	anime, err := getAnime(r, api.DB)
 	if err != nil {
-		http.Error(w, "404 page not found", http.StatusNotFound)
+		http.NotFound(w, r)
 		return
 	}
 	JSONResponse(w, anime, http.StatusOK)
@@ -148,7 +170,7 @@ func (api *API) HandleDirectory(w http.ResponseWriter, r *http.Request) {
 func (api *API) HandleEpisodeList(w http.ResponseWriter, r *http.Request) {
 	anime, err := getAnime(r, api.DB)
 	if err != nil {
-		http.Error(w, "404 page not found", http.StatusNotFound)
+		http.NotFound(w, r)
 		return
 	}
 	JSONResponse(w, EpisodesResponse{AnimeID: anime.Flvid, AnimeName: anime.Name,
@@ -157,22 +179,10 @@ func (api *API) HandleEpisodeList(w http.ResponseWriter, r *http.Request) {
 
 // HandleEpisodeDetails manage the episodes endpoint
 func (api *API) HandleEpisodeDetails(w http.ResponseWriter, r *http.Request) {
-	eNumber, err := strconv.ParseFloat(mux.Vars(r)["eNumber"], 64)
+	episodeRes, err := getEpisode(r, api.DB)
 	if err != nil {
-		http.Error(w, "404 page not found", http.StatusNotFound)
+		http.NotFound(w, r)
 		return
 	}
-	anime, err := getAnime(r, api.DB)
-	if err != nil {
-		http.Error(w, "404 page not found", http.StatusNotFound)
-		return
-	}
-	for _, episode := range anime.Episodes {
-		if episode.Number == eNumber {
-			JSONResponse(w, EpisodeResponse{AnimeID: anime.Flvid, AnimeName: anime.Name,
-				AnimeURL: anime.URL, Episode: episode}, http.StatusOK)
-			return
-		}
-	}
-	http.Error(w, "404 page not found", http.StatusNotFound)
+	JSONResponse(w, episodeRes, http.StatusOK)
 }
