@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/kuronosu/animeflv-api/pkg/db"
 )
@@ -67,4 +68,11 @@ func validSortField(field string) (string, int) {
 		}
 	}
 	return "_id", 1
+}
+
+func trimSuffix(s, suffix string) string {
+	if strings.HasSuffix(s, suffix) {
+		s = s[:len(s)-len(suffix)]
+	}
+	return s
 }

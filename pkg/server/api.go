@@ -13,7 +13,6 @@ const static = "/static/"
 func New(client *mongo.Client, port int) Server {
 	a := &API{DB: client, port: port}
 	r := mux.NewRouter()
-	r.Use(LogMiddleware)
 	r.PathPrefix(static).Handler(http.StripPrefix(static, http.FileServer(http.Dir("."+static))))
 	r.HandleFunc("/", a.HandleIndex).Methods(http.MethodGet)
 	r.HandleFunc(APIPath, a.HandleAPIIndex).Methods(http.MethodGet)

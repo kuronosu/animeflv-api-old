@@ -26,3 +26,14 @@ func CaselessMatcher(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
+
+// TrailingSlashes redirect when has end slash
+func TrailingSlashes(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/") {
+			http.Redirect(w, r, trimSuffix(r.URL.Path, "/"), http.StatusSeeOther)
+		} else {
+			next.ServeHTTP(w, r)
+		}
+	})
+}
