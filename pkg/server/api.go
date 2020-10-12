@@ -1,9 +1,11 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/kuronosu/animeflv-api/pkg/db"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -11,12 +13,14 @@ const static = "/static/"
 
 // New create new server
 func New(client *mongo.Client, port int) Server {
-	a := &API{DB: client, port: port}
+	fmt.Println(TypeDetailsPath)
+	a := &API{DBManager: db.Manager{Client: client}, port: port}
 	r := mux.NewRouter()
 	r.PathPrefix(static).Handler(http.StripPrefix(static, http.FileServer(http.Dir("."+static))))
 	r.HandleFunc("/", a.HandleIndex).Methods(http.MethodGet)
 	r.HandleFunc(APIPath, a.HandleAPIIndex).Methods(http.MethodGet)
 	r.HandleFunc(TypesPath, a.HandleTypes).Methods(http.MethodGet)
+	r.HandleFunc(TypeDetailsPath, a.HandleTypeDetails).Methods(http.MethodGet)
 	r.HandleFunc(StatesPath, a.HandleStates).Methods(http.MethodGet)
 	r.HandleFunc(GenresPath, a.HandleGenres).Methods(http.MethodGet)
 	r.HandleFunc(AnimesPath, a.HandleAnimes).Methods(http.MethodGet)

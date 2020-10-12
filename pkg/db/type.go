@@ -1,6 +1,22 @@
 package db
 
-import "github.com/kuronosu/animeflv-api/pkg/scrape"
+import (
+	"github.com/kuronosu/animeflv-api/pkg/scrape"
+	"go.mongodb.org/mongo-driver/mongo"
+)
+
+// Manager contains a db client and other utils
+type Manager struct {
+	Client *mongo.Client
+}
+
+func (manager *Manager) getDB() *mongo.Database {
+	return manager.Client.Database("deguvon")
+}
+
+func (manager *Manager) getCollection(collectionName string) *mongo.Collection {
+	return manager.getDB().Collection(collectionName)
+}
 
 // Serial represents a sequence document
 type Serial struct {
@@ -22,3 +38,6 @@ type Options struct {
 	SortField string
 	SortValue int
 }
+
+// FunctionDataHandler represents method to get data from db
+type FunctionDataHandler = func(int) (interface{}, error)

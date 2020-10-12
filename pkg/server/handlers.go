@@ -13,6 +13,20 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+func (api *API) genericDetails(w http.ResponseWriter, r *http.Request,
+	dataHandler db.FunctionDataHandler, urlVarID string) {
+	id, err := strconv.Atoi(mux.Vars(r)[urlVarID])
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	_type, err := dataHandler(id)
+	if err != nil {
+		http.NotFound(w, r)
+	}
+	JSONResponse(w, _type, http.StatusOK)
+}
+
 var baseTemplate = filepath.Join("tmpl", "base.html")
 
 func getAnime(r *http.Request, client *mongo.Client) (scrape.Anime, error) {
@@ -71,7 +85,7 @@ func (api *API) HandleAPIIndex(w http.ResponseWriter, r *http.Request) {
 
 // HandleTypes manage the types endpoint
 func (api *API) HandleTypes(w http.ResponseWriter, r *http.Request) {
-	types, _ := db.LoadTypes(api.DB)
+	types, _ := db.LoadTypes(api.DBManager.Client)
 	if len(types) == 0 {
 		InternalError(w, "Error al cargar datos")
 		return
@@ -79,9 +93,14 @@ func (api *API) HandleTypes(w http.ResponseWriter, r *http.Request) {
 	JSONResponse(w, types, http.StatusOK)
 }
 
+// HandleTypeDetails manage the type details endpoint
+func (api *API) HandleTypeDetails(w http.ResponseWriter, r *http.Request) {
+	api.genericDetails(w, r, api.DBManager.LoadOneType, "id")
+}
+
 // HandleStates manage the states endpoint
 func (api *API) HandleStates(w http.ResponseWriter, r *http.Request) {
-	states, _ := db.LoadStates(api.DB)
+	states, _ := db.LoadStates(api.DBManager.Client)
 	if len(states) == 0 {
 		InternalError(w, "Error al cargar datos")
 		return
@@ -91,7 +110,7 @@ func (api *API) HandleStates(w http.ResponseWriter, r *http.Request) {
 
 // HandleGenres manage the generes endpoint
 func (api *API) HandleGenres(w http.ResponseWriter, r *http.Request) {
-	genres, _ := db.LoadGenres(api.DB)
+	genres, _ := db.LoadGenres(api.DBManager.Client)
 	if len(genres) == 0 {
 		InternalError(w, "Error al cargar datos")
 		return
@@ -105,7 +124,7 @@ func (api *API) HandleAnimes(w http.ResponseWriter, r *http.Request) {
 	page, _ := strconv.Atoi(rawPage)
 	sortField, sortValue := validSortField(r.URL.Query().Get("order"))
 	options := db.Options{Page: page, SortField: sortField, SortValue: sortValue}
-	result, err := db.LoadAnimes(api.DB, options)
+	result, err := db.LoadAnimes(api.DBManager.Client, options)
 	if len(result.Animes) == 0 || err != nil {
 		InternalError(w, "Error al cargar datos")
 		return
@@ -119,7 +138,7 @@ func (api *API) HandleAnimes(w http.ResponseWriter, r *http.Request) {
 
 // HandleAnimeDetails manage the anime details endpoint
 func (api *API) HandleAnimeDetails(w http.ResponseWriter, r *http.Request) {
-	anime, err := getAnime(r, api.DB)
+	anime, err := getAnime(r, api.DBManager.Client)
 	if err != nil {
 		http.NotFound(w, r)
 		return
@@ -129,7 +148,7 @@ func (api *API) HandleAnimeDetails(w http.ResponseWriter, r *http.Request) {
 
 // HandleLatestEpisodes manage the latest episodes endpoint
 func (api *API) HandleLatestEpisodes(w http.ResponseWriter, r *http.Request) {
-	latestEpisodes, _ := db.LoadLatestEpisodes(api.DB)
+	latestEpisodes, _ := db.LoadLatestEpisodes(api.DBManager.Client)
 	if len(latestEpisodes) == 0 {
 		InternalError(w, "Error al cargar datos")
 		return
@@ -139,22 +158,22 @@ func (api *API) HandleLatestEpisodes(w http.ResponseWriter, r *http.Request) {
 
 // HandleDirectory manage the directory endpoint
 func (api *API) HandleDirectory(w http.ResponseWriter, r *http.Request) {
-	types, _ := db.LoadTypes(api.DB)
+	types, _ := db.LoadTypes(api.DBManager.Client)
 	if len(types) == 0 {
 		InternalError(w, "Error al cargar datos")
 		return
 	}
-	states, _ := db.LoadStates(api.DB)
+	states, _ := db.LoadStates(api.DBManager.Client)
 	if len(states) == 0 {
 		InternalError(w, "Error al cargar datos")
 		return
 	}
-	genres, _ := db.LoadGenres(api.DB)
+	genres, _ := db.LoadGenres(api.DBManager.Client)
 	if len(genres) == 0 {
 		InternalError(w, "Error al cargar datos")
 		return
 	}
-	animes, _ := db.LoadAllAnimes(api.DB)
+	animes, _ := db.LoadAllAnimes(api.DBManager.Client)
 	if len(animes) == 0 {
 		InternalError(w, "Error al cargar datos")
 		return
@@ -168,7 +187,7 @@ func (api *API) HandleDirectory(w http.ResponseWriter, r *http.Request) {
 
 // HandleEpisodeList manage the episodes endpoint
 func (api *API) HandleEpisodeList(w http.ResponseWriter, r *http.Request) {
-	anime, err := getAnime(r, api.DB)
+	anime, err := getAnime(r, api.DBManager.Client)
 	if err != nil {
 		http.NotFound(w, r)
 		return
@@ -179,7 +198,7 @@ func (api *API) HandleEpisodeList(w http.ResponseWriter, r *http.Request) {
 
 // HandleEpisodeDetails manage the episodes endpoint
 func (api *API) HandleEpisodeDetails(w http.ResponseWriter, r *http.Request) {
-	episodeRes, err := getEpisode(r, api.DB)
+	episodeRes, err := getEpisode(r, api.DBManager.Client)
 	if err != nil {
 		http.NotFound(w, r)
 		return

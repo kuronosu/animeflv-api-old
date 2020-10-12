@@ -5,15 +5,15 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/kuronosu/animeflv-api/pkg/db"
 	"github.com/kuronosu/animeflv-api/pkg/scrape"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 // API represents the api
 type API struct {
-	router http.Handler
-	port   int
-	DB     *mongo.Client
+	router    http.Handler
+	port      int
+	DBManager db.Manager
 }
 
 // Server represents the api

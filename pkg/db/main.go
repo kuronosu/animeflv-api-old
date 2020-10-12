@@ -162,6 +162,14 @@ func LoadStates(client *mongo.Client) ([]scrape.State, error) {
 	return results, nil
 }
 
+// LoadOneType from db
+func (manager *Manager) LoadOneType(id int) (interface{}, error) {
+	var result scrape.Type
+	coll := manager.getCollection("types")
+	err := coll.FindOne(ctx, bson.M{"_id": id}).Decode(&result)
+	return result, err
+}
+
 // LoadTypes from db
 func LoadTypes(client *mongo.Client) ([]scrape.Type, error) {
 	coll := client.Database("deguvon").Collection("types")
