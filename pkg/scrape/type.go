@@ -85,18 +85,18 @@ type AnimeSPContainer struct {
 
 // Directory contains all directory data
 type Directory struct {
-	States []State
-	Types  []Type
-	Genres []Genre
-	Animes map[int]Anime
+	States []State       `json:"states"`
+	Types  []Type        `json:"types"`
+	Genres []Genre       `json:"genres"`
+	Animes map[int]Anime `json:"animes"`
 }
 
 // LatestEpisode represent the info of the latest episode
 type LatestEpisode struct {
-	URL   string
-	Image string
-	Capi  string
-	Anime int
+	URL   string `json:"url"`
+	Image string `json:"image"`
+	Capi  string `json:"capi"`
+	Anime int    `json:"anime"`
 }
 
 // NewEpisode create a episode instance
