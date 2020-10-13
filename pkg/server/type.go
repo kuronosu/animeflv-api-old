@@ -24,7 +24,7 @@ type Server interface {
 
 // Router return the api router
 func (a *API) Router() http.Handler {
-	return LogMiddleware(TrailingSlashes(CaselessMatcher(a.router)))
+	return LogMiddleware(TrailingSlashes(CaselessMatcher(CorsMiddleware(a.router))))
 }
 
 // Run start the server
