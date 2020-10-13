@@ -36,6 +36,12 @@ const EpisodeListPath = AnimeDetailsPath + "/episodes"
 // EpisodeDetailsPath uri endpoint
 const EpisodeDetailsPath = EpisodeListPath + `/{eNumber}`
 
+// VideoPath uri endpoint
+const VideoPath = EpisodeDetailsPath + `/{server}`
+
+// VideoLangPath uri endpoint
+const VideoLangPath = VideoPath + `/{lang}`
+
 // DirectoryPath uri endpoint
 const DirectoryPath = APIPath + "/directory"
 

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/gorilla/mux"
 	"github.com/kuronosu/animeflv-api/pkg/db"
@@ -204,4 +205,45 @@ func (api *API) HandleEpisodeDetails(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	JSONResponse(w, episodeRes, http.StatusOK)
+}
+
+// HandleEpisodeVideo manage the videos endpoint
+func (api *API) HandleEpisodeVideo(w http.ResponseWriter, r *http.Request) {
+	server, found := mux.Vars(r)["server"]
+	if !found {
+		http.NotFound(w, r)
+		return
+	}
+	server = strings.ToLower(server)
+	if !scrape.ValidServer(server) {
+		http.NotFound(w, r)
+		return
+	}
+	lang, found := mux.Vars(r)["lang"]
+	if !found {
+		lang = "SUB"
+	}
+	lang = strings.ToUpper(lang)
+	if !scrape.ValidLang(lang) {
+		http.NotFound(w, r)
+		return
+	}
+
+	episodeRes, err := getEpisode(r, api.DBManager.Client)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	v, err := scrape.GetVideoByURL(scrape.EpisodeURL(episodeRes.Episode.URL))
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	err = v.Active(server, lang)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	JSONResponse(w, v, http.StatusOK)
 }

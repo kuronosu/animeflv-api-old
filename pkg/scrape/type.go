@@ -139,3 +139,16 @@ func NewRelation(Name string, URL string, Rel string) Relation {
 // 		OtherNames:      OtherNames,
 // 	}
 // }
+
+// VideoServerData contains the data of a video server
+type VideoServerData struct {
+	Server      string `json:"server"`
+	Title       string `json:"title"`
+	AllowMobile bool   `json:"allow_mobile"`
+	Code        string `json:"code"`
+}
+
+type Video struct {
+	ActiveURL string
+	Servers   map[string][]VideoServerData
+}

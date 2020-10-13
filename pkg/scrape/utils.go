@@ -61,3 +61,25 @@ func FloatToString(num float64) string {
 	}
 	return strconv.FormatFloat(float64(num), 'f', decimals, 64)
 }
+
+// ValidLang verify if string is a valid lang
+func ValidLang(lang string) bool {
+	switch lang {
+	case SUB, LAT, ESP:
+		return true
+	}
+	return false
+}
+
+// AvailableServers programed scrape servers
+var AvailableServers = []string{"gocdn"}
+
+// ValidServer verify if string is a valid server
+func ValidServer(server string) bool {
+	for _, s := range AvailableServers {
+		if s == server {
+			return true
+		}
+	}
+	return false
+}

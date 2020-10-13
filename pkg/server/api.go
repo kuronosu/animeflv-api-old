@@ -29,6 +29,8 @@ func New(client *mongo.Client, port int) Server {
 	r.HandleFunc(AnimeDetailsPath, a.HandleAnimeDetails).Methods(http.MethodGet)
 	r.HandleFunc(EpisodeListPath, a.HandleEpisodeList).Methods(http.MethodGet)
 	r.HandleFunc(EpisodeDetailsPath, a.HandleEpisodeDetails).Methods(http.MethodGet)
+	r.HandleFunc(VideoPath, a.HandleEpisodeVideo).Methods(http.MethodGet)
+	r.HandleFunc(VideoLangPath, a.HandleEpisodeVideo).Methods(http.MethodGet)
 	a.router = r
 	return a
 }
