@@ -148,7 +148,8 @@ type VideoServerData struct {
 	Code        string `json:"code"`
 }
 
+// Video contiene los datos de un video
 type Video struct {
-	ActiveURL string
-	Servers   map[string][]VideoServerData
+	ActiveURL string                       `json:"active_url"`
+	Servers   map[string][]VideoServerData `json:"servers"`
 }
