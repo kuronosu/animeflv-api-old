@@ -247,3 +247,15 @@ func (api *API) HandleEpisodeVideo(w http.ResponseWriter, r *http.Request) {
 	}
 	JSONResponse(w, v, http.StatusOK)
 }
+
+// HandleAnimeSearch manage anime search endpoint
+func (api *API) HandleAnimeSearch(w http.ResponseWriter, r *http.Request) {
+	name, found := r.URL.Query()["name"]
+	if found && len(name) > 0 && name[0] != "" {
+		if animes, err := api.DBManager.SearchAnimeByName(name[0]); err == nil {
+			JSONResponse(w, animes, http.StatusOK)
+			return
+		}
+	}
+	JSONResponse(w, []interface{}{}, http.StatusOK)
+}

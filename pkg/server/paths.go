@@ -30,6 +30,9 @@ const LatestEpisodesPath = APIPath + "/latest"
 // AnimeDetailsPath uri endpoint
 const AnimeDetailsPath = AnimesPath + "/{flvid:[0-9]+}"
 
+// SearchAnimePath uri endpoint
+const SearchAnimePath = AnimesPath + "/search"
+
 // EpisodeListPath uri endpoint
 const EpisodeListPath = AnimeDetailsPath + "/episodes"
 

@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -13,7 +12,6 @@ const static = "/static/"
 
 // New create new server
 func New(client *mongo.Client, port int) Server {
-	fmt.Println(TypeDetailsPath)
 	a := &API{DBManager: db.Manager{Client: client}, port: port}
 	r := mux.NewRouter()
 	r.PathPrefix(static).Handler(http.StripPrefix(static, http.FileServer(http.Dir("."+static))))
@@ -31,6 +29,7 @@ func New(client *mongo.Client, port int) Server {
 	r.HandleFunc(EpisodeDetailsPath, a.HandleEpisodeDetails).Methods(http.MethodGet)
 	r.HandleFunc(VideoPath, a.HandleEpisodeVideo).Methods(http.MethodGet)
 	r.HandleFunc(VideoLangPath, a.HandleEpisodeVideo).Methods(http.MethodGet)
+	r.HandleFunc(SearchAnimePath, a.HandleAnimeSearch).Methods(http.MethodGet)
 	a.router = r
 	return a
 }

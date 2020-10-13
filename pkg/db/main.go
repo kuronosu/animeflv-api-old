@@ -284,6 +284,33 @@ func LoadOneAnime(client *mongo.Client, flvid int) (scrape.Anime, error) {
 	return result, err
 }
 
+// SearchAnimeByName from db
+func (manager *Manager) SearchAnimeByName(name string) ([]scrape.Anime, error) {
+	coll := manager.getCollection("animes")
+	patternName := `.*` + name + `.*`
+	nameB := bson.M{"name": bson.M{"$regex": primitive.Regex{Pattern: patternName, Options: "i"}}}
+	othernamesB := bson.M{"othernames": bson.M{"$regex": primitive.Regex{Pattern: patternName, Options: "i"}}}
+	op := options.Find()
+	op.SetSort(bson.D{primitive.E{Key: "name", Value: 1}})
+	cur, _ := coll.Find(ctx, bson.M{"$or": []interface{}{nameB, othernamesB}}, op)
+
+	var results []scrape.Anime
+	for cur.Next(ctx) {
+		var s scrape.Anime
+		err := cur.Decode(&s)
+		if err != nil {
+			return results, err
+		}
+		results = append(results, s)
+	}
+	if err := cur.Err(); err != nil {
+		return results, err
+	}
+	cur.Close(ctx)
+	return results, nil
+
+}
+
 // LoadLatestEpisodes from db
 func LoadLatestEpisodes(client *mongo.Client) ([]scrape.LatestEpisode, error) {
 	coll := client.Database("deguvon").Collection("latestEpisodes")
