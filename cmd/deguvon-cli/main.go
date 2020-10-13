@@ -53,27 +53,33 @@ func main() {
 }
 
 func createDirectory() {
-	client, err := db.SetUp()
+	manager, err := db.SetUp()
 	if err != nil {
 		log.Fatal(err)
 	}
 	containerI, _, _ := scrape.AllAnimesByPage()
 	container := containerI.(scrape.AnimeSPContainer)
 
+	manager.DropAll()
+
 	dillDbTime := time.Now()
-	db.InsertStates(client, container.States)
-	db.InsertTypes(client, container.Types)
-	db.InsertGenres(client, container.Genres)
-	insertResult, err := db.InsertAnimes(client, container.Animes)
+	db.InsertStates(manager.Client, container.States)
+	db.InsertTypes(manager.Client, container.Types)
+	db.InsertGenres(manager.Client, container.Genres)
+	insertResult, err := db.InsertAnimes(manager.Client, container.Animes)
 	if err != nil {
 		log.Fatal(err)
+	}
+	le, _, e := scrape.FetchLatestEpisodes()
+	if e == nil {
+		db.SetLatestEpisodes(manager.Client, le)
 	}
 	fmt.Printf("Base de datos llenada en %s con %d animes\n", time.Since(dillDbTime), len(insertResult.InsertedIDs))
 }
 
 func intervalForLatestEpisodes() {
 	fmt.Print("Connect to db")
-	client, err := db.SetUp()
+	manager, err := db.SetUp()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -83,8 +89,8 @@ func intervalForLatestEpisodes() {
 		go spinner("Getting latest episodes", 100*time.Millisecond)
 		le, a, e := scrape.FetchLatestEpisodes()
 		if e == nil {
-			db.SetLatestEpisodes(client, le)
-			_, in, _ := db.UpdateOrInsertAnimes(client, a.Animes)
+			db.SetLatestEpisodes(manager.Client, le)
+			_, in, _ := db.UpdateOrInsertAnimes(manager.Client, a.Animes)
 			if len(in) > 0 {
 				relatedURLs := []string{}
 				for _, anime := range in {
@@ -92,14 +98,14 @@ func intervalForLatestEpisodes() {
 						relatedURLs = append(relatedURLs, rel.URL)
 					}
 				}
-				states, _ := db.LoadStates(client)
-				genres, _ := db.LoadGenres(client)
-				types, _ := db.LoadTypes(client)
+				states, _ := db.LoadStates(manager.Client)
+				genres, _ := db.LoadGenres(manager.Client)
+				types, _ := db.LoadTypes(manager.Client)
 				container := scrape.AnimeSPContainer{
 					States: states, Types: types,
 					Genres: genres, Animes: []scrape.Anime{}}
 				scrape.GetAnimes(relatedURLs, &container)
-				db.UpdateOrInsertAnimes(client, container.Animes)
+				db.UpdateOrInsertAnimes(manager.Client, container.Animes)
 			}
 		}
 		stopSpinner = true

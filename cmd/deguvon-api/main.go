@@ -16,10 +16,10 @@ func main() {
 		log.Printf("Defaulting to port %d", port)
 	}
 	log.Println("Connect to db")
-	client, err := db.SetUp()
+	manager, err := db.SetUp()
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Println("Connected to db")
-	log.Fatal(server.New(client, port).Run())
+	log.Fatal(server.New(manager, port).Run())
 }

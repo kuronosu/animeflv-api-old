@@ -16,7 +16,7 @@ import (
 var ctx = context.TODO()
 
 // SetUp Create mongo client
-func SetUp() (*mongo.Client, error) {
+func SetUp() (Manager, error) {
 	connectionString := os.Getenv("MongoConnectionString")
 	if connectionString == "" {
 		connectionString = "mongodb://localhost:27017"
@@ -26,15 +26,24 @@ func SetUp() (*mongo.Client, error) {
 	defer cancel()
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(connectionString))
 	if err != nil {
-		return nil, err
+		return Manager{}, err
 	}
 
 	// Check the connections
 	err = client.Ping(ctx, nil)
 	if err != nil {
-		return nil, err
+		return Manager{}, err
 	}
-	return client, nil
+	return Manager{Client: client}, nil
+}
+
+// DropAll collection from db
+func (m *Manager) DropAll() {
+	m.getCollection("states").Drop(ctx)
+	m.getCollection("types").Drop(ctx)
+	m.getCollection("genres").Drop(ctx)
+	m.getCollection("animes").Drop(ctx)
+	m.getCollection("latestEpisodes").Drop(ctx)
 }
 
 // InsertStates insert list of states in states collection

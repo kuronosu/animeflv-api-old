@@ -5,14 +5,13 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/kuronosu/animeflv-api/pkg/db"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 const static = "/static/"
 
 // New create new server
-func New(client *mongo.Client, port int) Server {
-	a := &API{DBManager: db.Manager{Client: client}, port: port}
+func New(manager db.Manager, port int) Server {
+	a := &API{DBManager: manager, port: port}
 	r := mux.NewRouter()
 	r.PathPrefix(static).Handler(http.StripPrefix(static, http.FileServer(http.Dir("."+static))))
 	r.HandleFunc("/", a.HandleIndex).Methods(http.MethodGet)
