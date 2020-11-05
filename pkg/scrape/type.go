@@ -105,7 +105,7 @@ func NewEpisode(Number float64, Eid int, Flvid int, animeSlug string) Episode {
 		Number: Number,
 		Eid:    Eid,
 		URL:    fmt.Sprintf("/ver/%s-%s", animeSlug, FloatToString(Number)),
-		Img:    fmt.Sprintf("https://cdn.animeflv.net/screenshots/%d/%s/th_3.jpg", Flvid, FloatToString(Number)),
+		Img:    fmt.Sprintf("/screenshots/%d/%s/th_3.jpg", Flvid, FloatToString(Number)),
 	}
 }
 

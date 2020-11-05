@@ -48,6 +48,9 @@ const VideoLangPath = VideoPath + `/{lang}`
 // DirectoryPath uri endpoint
 const DirectoryPath = APIPath + "/directory"
 
+// ScreenshotsPath image endpoint
+const ScreenshotsPath = `/screenshots/{a:[0-9]+}/{e:[0-9]+}/th_3.jpg`
+
 // AllPaths array with all paths (uris)
 var AllPaths = []string{APIPath, TypesPath, StatesPath, GenresPath, AnimesPath, LatestEpisodesPath, DirectoryPath}
 

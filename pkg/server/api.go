@@ -29,6 +29,10 @@ func New(manager db.Manager, port int) Server {
 	r.HandleFunc(VideoPath, a.HandleEpisodeVideo).Methods(http.MethodGet)
 	r.HandleFunc(VideoLangPath, a.HandleEpisodeVideo).Methods(http.MethodGet)
 	r.HandleFunc(SearchAnimePath, a.HandleAnimeSearch).Methods(http.MethodGet)
+
+	// Images handlers
+	r.HandleFunc(ScreenshotsPath, HandleScreenshots).Methods(http.MethodGet)
+
 	a.router = r
 	return a
 }

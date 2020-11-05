@@ -2,7 +2,10 @@ package server
 
 import (
 	"errors"
+	"fmt"
+	"html"
 	"html/template"
+	"io"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -258,4 +261,30 @@ func (api *API) HandleAnimeSearch(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	JSONResponse(w, []interface{}{}, http.StatusOK)
+}
+
+// Images
+
+func handleImage(w http.ResponseWriter, r *http.Request, url string) {
+	reqImg, err := scrape.Fetch(url)
+	defer reqImg.Body.Close()
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	if reqImg.StatusCode != 200 {
+		http.NotFound(w, r)
+		return
+	}
+	w.Header().Set("Content-Length", fmt.Sprint(reqImg.ContentLength))
+	w.Header().Set("Content-Type", reqImg.Header.Get("Content-Type"))
+	if _, err = io.Copy(w, reqImg.Body); err != nil {
+		http.NotFound(w, r)
+		return
+	}
+}
+
+// HandleScreenshots manage screenshot request
+func HandleScreenshots(w http.ResponseWriter, r *http.Request) {
+	handleImage(w, r, "https://cdn.animeflv.net"+html.EscapeString(r.URL.Path))
 }

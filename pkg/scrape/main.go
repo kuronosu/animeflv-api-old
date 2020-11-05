@@ -67,8 +67,8 @@ func GetAnime(doc *goquery.Document, states *[]State, types *[]Type, genres *[]G
 		Relations:  getRelations(doc),
 	}
 	jsContent := getScript(doc)
-	setAnimeDataFromScript(&anime, jsContent)
-	setEpisodesFromScript(&anime, jsContent)
+	anime.setDataFromScript(jsContent)
+	anime.setEpisodesFromScript(jsContent)
 	return anime
 }
 
@@ -187,8 +187,8 @@ func getRelations(document *goquery.Document) []Relation {
 	return relations
 }
 
-// setAnimeDataFromScript set Flvid Name Slug NextEpisodeDate from script
-func setAnimeDataFromScript(a *Anime, script string) {
+// setDataFromScript set Flvid Name Slug NextEpisodeDate from script
+func (a *Anime) setDataFromScript(script string) {
 	rawAnimeInfo := AnimeScriptPattern.FindString(script)
 	rawAnimeInfo = strings.ReplaceAll(rawAnimeInfo, "var anime_info = ", "")
 	rawAnimeInfo = rawAnimeInfo[0 : len(rawAnimeInfo)-1]
@@ -206,7 +206,7 @@ func setAnimeDataFromScript(a *Anime, script string) {
 }
 
 // setEpisodesFromScript set Flvid Name Slug NextEpisodeDate from script
-func setEpisodesFromScript(a *Anime, script string) {
+func (a *Anime) setEpisodesFromScript(script string) {
 	rawEpisodes := EpisodeScriptPattern.FindString(script)
 	rawEpisodes = strings.ReplaceAll(rawEpisodes, "var episodes = ", "")
 	rawEpisodes = rawEpisodes[0 : len(rawEpisodes)-1]
