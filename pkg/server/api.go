@@ -32,7 +32,8 @@ func New(manager db.Manager, port int) Server {
 
 	// Images handlers
 	r.HandleFunc(ScreenshotsPath, HandleScreenshots).Methods(http.MethodGet)
-	r.HandleFunc(CoversPath, HandleCovers).Methods(http.MethodGet)
+	r.HandleFunc(CoversPath, HandleCoversBanners).Methods(http.MethodGet)
+	r.HandleFunc(BannersPath, HandleCoversBanners).Methods(http.MethodGet)
 
 	a.router = r
 	return a

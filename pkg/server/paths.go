@@ -54,6 +54,9 @@ const ScreenshotsPath = `/screenshots/{a:[0-9]+}/{e:[0-9]+}/th_3.jpg`
 // CoversPath image endpoint
 const CoversPath = `/uploads/animes/covers/{a:[0-9]+}.jpg`
 
+// BannersPath image endpoint
+const BannersPath = `/uploads/animes/banners/{a:[0-9]+}.jpg`
+
 // AllPaths array with all paths (uris)
 var AllPaths = []string{APIPath, TypesPath, StatesPath, GenresPath, AnimesPath, LatestEpisodesPath, DirectoryPath}
 

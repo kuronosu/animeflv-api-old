@@ -276,6 +276,7 @@ func handleImage(w http.ResponseWriter, r *http.Request, url string, validator f
 		http.NotFound(w, r)
 		return
 	}
+	w.WriteHeader(reqImg.StatusCode)
 	w.Header().Set("Content-Length", fmt.Sprint(reqImg.ContentLength))
 	w.Header().Set("Content-Type", reqImg.Header.Get("Content-Type"))
 	if _, err = io.Copy(w, reqImg.Body); err != nil {
@@ -289,8 +290,8 @@ func HandleScreenshots(w http.ResponseWriter, r *http.Request) {
 	handleImage(w, r, "https://cdn.animeflv.net"+html.EscapeString(r.URL.Path), func(_ *http.Response) bool { return true })
 }
 
-// HandleCovers manage screenshot request
-func HandleCovers(w http.ResponseWriter, r *http.Request) {
+// HandleCoversBanners manage covers and banners request
+func HandleCoversBanners(w http.ResponseWriter, r *http.Request) {
 	handleImage(w, r, scrape.AnimeFlvURL+html.EscapeString(r.URL.Path), func(res *http.Response) bool {
 		if res.ContentLength == 6767 || res.ContentLength == 4222 {
 			return false
