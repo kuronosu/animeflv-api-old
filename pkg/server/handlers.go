@@ -265,14 +265,14 @@ func (api *API) HandleAnimeSearch(w http.ResponseWriter, r *http.Request) {
 
 // Images
 
-func handleImage(w http.ResponseWriter, r *http.Request, url string) {
+func handleImage(w http.ResponseWriter, r *http.Request, url string, validator func(*http.Response) bool) {
 	reqImg, err := scrape.Fetch(url)
 	defer reqImg.Body.Close()
 	if err != nil {
 		http.NotFound(w, r)
 		return
 	}
-	if reqImg.StatusCode != 200 {
+	if reqImg.StatusCode != 200 || !validator(reqImg) {
 		http.NotFound(w, r)
 		return
 	}
@@ -286,5 +286,15 @@ func handleImage(w http.ResponseWriter, r *http.Request, url string) {
 
 // HandleScreenshots manage screenshot request
 func HandleScreenshots(w http.ResponseWriter, r *http.Request) {
-	handleImage(w, r, "https://cdn.animeflv.net"+html.EscapeString(r.URL.Path))
+	handleImage(w, r, "https://cdn.animeflv.net"+html.EscapeString(r.URL.Path), func(_ *http.Response) bool { return true })
+}
+
+// HandleCovers manage screenshot request
+func HandleCovers(w http.ResponseWriter, r *http.Request) {
+	handleImage(w, r, scrape.AnimeFlvURL+html.EscapeString(r.URL.Path), func(res *http.Response) bool {
+		if res.ContentLength == 6767 || res.ContentLength == 4222 {
+			return false
+		}
+		return true
+	})
 }
