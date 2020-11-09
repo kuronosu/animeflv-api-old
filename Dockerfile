@@ -13,4 +13,4 @@ RUN go build -o /go/bin/deguvon-api ./cmd/deguvon-api \
 
 EXPOSE 8080
 
-ENTRYPOINT ["/go/bin/deguvon-api"]
+CMD ["/go/bin/deguvon-api"]
