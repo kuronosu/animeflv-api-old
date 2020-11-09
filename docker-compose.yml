@@ -2,6 +2,7 @@ version: "3.8"
 
 services:
   app:
+    image: kuronosu/animeflv-api
     build: .
     environment:
       MongoConnectionString: "mongodb://db:27017"

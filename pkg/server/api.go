@@ -13,7 +13,7 @@ const static = "/static/"
 func New(manager db.Manager, port int) Server {
 	a := &API{DBManager: manager, port: port}
 	r := mux.NewRouter()
-	r.PathPrefix(static).Handler(http.StripPrefix(static, http.FileServer(http.Dir("."+static))))
+	r.PathPrefix(static).Handler(http.StripPrefix(static, http.FileServer(http.Dir(".res"+static))))
 	r.HandleFunc("/", a.HandleIndex).Methods(http.MethodGet)
 	r.HandleFunc(APIPath, a.HandleAPIIndex).Methods(http.MethodGet)
 	r.HandleFunc(TypesPath, a.HandleTypes).Methods(http.MethodGet)

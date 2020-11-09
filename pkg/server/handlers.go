@@ -17,6 +17,12 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+var baseTemplate = filepath.Join("res", "tmpl", "base.html")
+
+func getTemplateFromBase(file string) (*template.Template, error) {
+	return template.ParseFiles(filepath.Join("res", "tmpl", file), baseTemplate)
+}
+
 func (api *API) genericDetails(w http.ResponseWriter, r *http.Request,
 	dataHandler db.FunctionDataHandler, urlVarID string) {
 	id, err := strconv.Atoi(mux.Vars(r)[urlVarID])
@@ -30,8 +36,6 @@ func (api *API) genericDetails(w http.ResponseWriter, r *http.Request,
 	}
 	JSONResponse(w, _type, http.StatusOK)
 }
-
-var baseTemplate = filepath.Join("tmpl", "base.html")
 
 func getAnime(r *http.Request, client *mongo.Client) (scrape.Anime, error) {
 	vars := mux.Vars(r)
@@ -65,7 +69,7 @@ func getEpisode(r *http.Request, client *mongo.Client) (*EpisodeResponse, error)
 
 // HandleIndex manage the index route
 func (api *API) HandleIndex(w http.ResponseWriter, r *http.Request) {
-	tmplt, err := template.ParseFiles(filepath.Join("tmpl", "index.html"), baseTemplate)
+	tmplt, err := getTemplateFromBase("index.html")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -77,7 +81,7 @@ func (api *API) HandleIndex(w http.ResponseWriter, r *http.Request) {
 
 // HandleAPIIndex manage the api base route
 func (api *API) HandleAPIIndex(w http.ResponseWriter, r *http.Request) {
-	tmplt, err := template.ParseFiles(filepath.Join("tmpl", "api_index.html"), baseTemplate)
+	tmplt, err := getTemplateFromBase("api_index.html")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
