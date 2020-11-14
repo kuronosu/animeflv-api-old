@@ -294,6 +294,11 @@ func HandleScreenshots(w http.ResponseWriter, r *http.Request) {
 	handleImage(w, r, "https://cdn.animeflv.net"+html.EscapeString(r.URL.Path), func(_ *http.Response) bool { return true })
 }
 
+// HandleThumbs manage screenshot request
+func HandleThumbs(w http.ResponseWriter, r *http.Request) {
+	handleImage(w, r, scrape.AnimeFlvURL+html.EscapeString(r.URL.Path), func(_ *http.Response) bool { return true })
+}
+
 // HandleCoversBanners manage covers and banners request
 func HandleCoversBanners(w http.ResponseWriter, r *http.Request) {
 	handleImage(w, r, scrape.AnimeFlvURL+html.EscapeString(r.URL.Path), func(res *http.Response) bool {
