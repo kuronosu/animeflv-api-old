@@ -231,7 +231,9 @@ func GetLatestEpisodes(doc *goquery.Document) []*LatestEpisode {
 		latestEpisodes = append(latestEpisodes, &LatestEpisode{
 			URL:   a.AttrOr("href", ""),
 			Image: a.Find("img").AttrOr("src", ""),
-			Capi:  strings.Trim(a.Find("span.Capi").Text(), " ")})
+			Capi:  strings.Trim(a.Find("span.Capi").Text(), " "),
+			Anime: &animeLatest{Name: a.Find("strong.Title").Text()},
+		})
 	})
 	return latestEpisodes
 	// ListEpisodios

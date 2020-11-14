@@ -91,12 +91,17 @@ type Directory struct {
 	Animes map[int]Anime `json:"animes"`
 }
 
+type animeLatest struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
 // LatestEpisode represent the info of the latest episode
 type LatestEpisode struct {
-	URL   string `json:"url"`
-	Image string `json:"image"`
-	Capi  string `json:"capi"`
-	Anime int    `json:"anime"`
+	URL   string       `json:"url"`
+	Image string       `json:"image"`
+	Capi  string       `json:"capi"`
+	Anime *animeLatest `json:"anime"`
 }
 
 // NewEpisode create a episode instance
