@@ -158,3 +158,13 @@ type Video struct {
 	ActiveURL string                       `json:"active_url"`
 	Servers   map[string][]VideoServerData `json:"servers"`
 }
+
+type FembedVideoData struct {
+	File  string `json:"file"`
+	Label string `json:"label"`
+	Type  string `json:"type"`
+}
+type FembedResponse struct {
+	Success bool              `json:"success"`
+	Data    []FembedVideoData `json:"data"`
+}

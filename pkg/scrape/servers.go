@@ -12,10 +12,10 @@ import (
 // SUB Subtitled key
 const SUB = "SUB"
 
-// LAT Latino key
+// LAT Latin spanish key
 const LAT = "LAT"
 
-// ESP Spanish key
+// ESP Spain spanish key
 const ESP = "ESP"
 
 // Langs contains all the possible lang of a video
@@ -59,43 +59,86 @@ func GetVideoByURL(url string) (*Video, error) {
 
 // Active get the active url from a server
 func (v *Video) Active(server, lang string) error {
+	if !ValidLang(lang) {
+		return fmt.Errorf("%s is not a valid lang", lang)
+	}
 	switch strings.ToLower(server) {
 	case "gocdn":
 		return v.Gocdn(lang)
+	case "fembed":
+		return v.Fembed(lang)
 	}
 	return fmt.Errorf("%s is not a valid server", server)
 }
 
-// Gocdn activate the gocdn video server
-func (v *Video) Gocdn(lang string) error {
-	if !ValidLang(lang) {
-		return fmt.Errorf("%s is not a valid lang", lang)
-	}
-	// if v.Servers.
+// NotAvailableLanguage error
+func NotAvailableLanguage(server string, lang string) error {
+	return fmt.Errorf("%s is not available in the language %s", server, lang)
+}
+
+// CheckLanguageByServer check if a video server supports a language
+func (v *Video) CheckLanguageByServer(server string, lang string) (VideoServerData, error) {
 	if servers, found := v.Servers[lang]; found {
 		for _, video := range servers {
-			if video.Server == "gocdn" {
-				subs := strings.Split(video.Code, "#")
-				if len(subs) > 0 {
-					resp, err := Fetch("https://streamium.xyz/gocdn.php?v=" + subs[len(subs)-1])
-					if err != nil {
-						return err
-					}
-					bodyBytes, err := ioutil.ReadAll(resp.Body)
-					if err != nil {
-						return err
-					}
-					var data map[string]string
-					json.Unmarshal(bodyBytes, &data)
-					url, found := data["file"]
-					if !found {
-						return fmt.Errorf("could not get the url of the video")
-					}
-					v.ActiveURL = url
-					return nil
-				}
+			if video.Server == server {
+				return video, nil
 			}
 		}
 	}
-	return fmt.Errorf("gocdn is not available in the language %s", lang)
+	return VideoServerData{}, NotAvailableLanguage("Gocdn", lang)
+}
+
+// Gocdn activate the gocdn video server
+func (v *Video) Gocdn(lang string) error {
+	video, err := v.CheckLanguageByServer("gocdn", lang)
+	if err != nil {
+		subs := strings.Split(video.Code, "#")
+		if len(subs) > 0 {
+			resp, err := Fetch("https://streamium.xyz/gocdn.php?v=" + subs[len(subs)-1])
+			if err != nil {
+				return err
+			}
+			bodyBytes, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return err
+			}
+			var data map[string]string
+			err = json.Unmarshal(bodyBytes, &data)
+			if err != nil {
+				return err
+			}
+			url, found := data["file"]
+			if !found {
+				return fmt.Errorf("could not get the url of the video")
+			}
+			v.ActiveURL = url
+			return nil
+		}
+	}
+	return err
+}
+
+// Fembed activate the fembed video server
+func (v *Video) Fembed(lang string) error {
+	video, err := v.CheckLanguageByServer("fembed", lang)
+	if err != nil {
+		resp, err := FetchPost(strings.Replace(video.Code, "/v/", "/api/source/", 1))
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+		var fdata FembedResponse
+		err = json.Unmarshal(bodyBytes, &fdata)
+		if !fdata.Success || len(fdata.Data) == 0 || err != nil {
+			return fmt.Errorf("Request was not succeeded")
+		}
+		v.ActiveURL = fdata.Data[0].File
+		return nil
+	}
+	return err
 }

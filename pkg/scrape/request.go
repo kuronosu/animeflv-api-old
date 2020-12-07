@@ -3,6 +3,7 @@ package scrape
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -14,9 +15,21 @@ import (
 // Fetch make request and return response
 func Fetch(URL string) (*http.Response, error) {
 	client := &http.Client{
-		Timeout: 30 * time.Second,
+		Timeout: 2 * time.Second,
 	}
 	resp, err := client.Get(URL)
+	if err != nil {
+		resp.Body.Close()
+	}
+	return resp, err
+}
+
+// FetchPost make a post request and return response
+func FetchPost(URL string) (*http.Response, error) {
+	client := &http.Client{
+		Timeout: 2 * time.Second,
+	}
+	resp, err := client.PostForm(URL, url.Values{})
 	if err != nil {
 		resp.Body.Close()
 	}

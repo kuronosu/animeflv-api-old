@@ -72,7 +72,7 @@ func ValidLang(lang string) bool {
 }
 
 // AvailableServers programed scrape servers
-var AvailableServers = []string{"gocdn"}
+var AvailableServers = []string{"gocdn", "fembed"}
 
 // ValidServer verify if string is a valid server
 func ValidServer(server string) bool {
