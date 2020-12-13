@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"log"
 )
 
@@ -55,32 +56,37 @@ const LightCyan = "\033[1;36m"
 // White color
 const White = "\033[1;37m"
 
-// ColoredText return text with the specified Color
-func ColoredText(text string, color string) string {
-	return string(color) + text + string(NC)
+// Colored return text with the specified Color
+func Colored(color string, v ...interface{}) string {
+	return color + fmt.Sprint(v...) + NC
+}
+
+// ColoredLog print log in specified Color
+func ColoredLog(color string, v ...interface{}) {
+	log.Println(Colored(color, v...))
 }
 
 // InfoLog print log in blue color
-func InfoLog(text string) {
-	log.Println(ColoredText(text, LightBlue))
+func InfoLog(v ...interface{}) {
+	log.Println(Colored(LightBlue, v...))
 }
 
 // SuccessLog print log in blue color
-func SuccessLog(text string) {
-	log.Println(ColoredText(text, LightGreen))
+func SuccessLog(v ...interface{}) {
+	log.Println(Colored(LightGreen, v...))
 }
 
 // WarningLog print log in yellow color
-func WarningLog(text string) {
-	log.Println(ColoredText(text, Yellow))
+func WarningLog(v ...interface{}) {
+	log.Println(Colored(Yellow, v...))
 }
 
 // ErrorLog print log in red color
-func ErrorLog(text string) {
-	log.Println(ColoredText(text, LightRed))
+func ErrorLog(v ...interface{}) {
+	log.Println(Colored(LightRed, v...))
 }
 
 // FatalLog call log.Fatal with red color
-func FatalLog(text string) {
-	log.Println(ColoredText(text, Red))
+func FatalLog(v ...interface{}) {
+	log.Fatal(Colored(Red, v...))
 }
