@@ -2,11 +2,11 @@ package server
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/kuronosu/animeflv-api/pkg/db"
 	"github.com/kuronosu/animeflv-api/pkg/scrape"
+	"github.com/kuronosu/animeflv-api/pkg/utils"
 )
 
 // API represents the api
@@ -29,7 +29,7 @@ func (a *API) Router() http.Handler {
 
 // Run start the server
 func (a *API) Run() error {
-	log.Printf("Listen to :%d", a.port)
+	utils.InfoLog(fmt.Sprintf("Listen to :%d", a.port))
 	return http.ListenAndServe(fmt.Sprint(":", a.port), a.Router())
 }
 
