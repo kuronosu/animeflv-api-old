@@ -38,56 +38,61 @@ func SetUp() (Manager, error) {
 }
 
 // DropAll collection from db
-func (m *Manager) DropAll() {
-	m.getCollection("states").Drop(ctx)
-	m.getCollection("types").Drop(ctx)
-	m.getCollection("genres").Drop(ctx)
-	m.getCollection("animes").Drop(ctx)
-	m.getCollection("latestEpisodes").Drop(ctx)
+func (manager *Manager) DropAll() {
+	manager.GetCollection("states").Drop(ctx)
+	manager.GetCollection("types").Drop(ctx)
+	manager.GetCollection("genres").Drop(ctx)
+	manager.GetCollection("animes").Drop(ctx)
+	manager.GetCollection("latestEpisodes").Drop(ctx)
+}
+
+// InsertMany insert data in db
+func (manager *Manager) InsertMany(coll string, data ...interface{}) (*mongo.InsertManyResult, error) {
+	collection := manager.GetCollection(coll)
+	insertManyResult, err := collection.InsertMany(ctx, data)
+	return insertManyResult, err
 }
 
 // InsertStates insert list of states in states collection
-func InsertStates(client *mongo.Client, states []scrape.State) (*mongo.InsertManyResult, error) {
+func (manager *Manager) InsertStates(states []scrape.State) (*mongo.InsertManyResult, error) {
+	// elementsI := make([]interface{}, len(elements))
+	// for i, v := range elements {
+	// 	elementsI[i] = v
+	// }
+	// return elementsI
+
 	statesI := make([]interface{}, len(states))
 	for i, v := range states {
 		statesI[i] = v
 	}
-	collection := client.Database("deguvon").Collection("states")
-	insertManyResult, err := collection.InsertMany(ctx, statesI)
-	return insertManyResult, err
+	return manager.InsertMany("states", statesI...)
 }
 
 // InsertTypes insert list of types in types collection
-func InsertTypes(client *mongo.Client, types []scrape.Type) (*mongo.InsertManyResult, error) {
+func (manager *Manager) InsertTypes(types []scrape.Type) (*mongo.InsertManyResult, error) {
 	typesI := make([]interface{}, len(types))
 	for i, v := range types {
 		typesI[i] = v
 	}
-	collection := client.Database("deguvon").Collection("types")
-	insertManyResult, err := collection.InsertMany(ctx, typesI)
-	return insertManyResult, err
+	return manager.InsertMany("types", typesI...)
 }
 
 // InsertGenres insert list of genres in genres collection
-func InsertGenres(client *mongo.Client, genres []scrape.Genre) (*mongo.InsertManyResult, error) {
+func (manager *Manager) InsertGenres(genres []scrape.Genre) (*mongo.InsertManyResult, error) {
 	genresI := make([]interface{}, len(genres))
 	for i, v := range genres {
 		genresI[i] = v
 	}
-	collection := client.Database("deguvon").Collection("genres")
-	insertManyResult, err := collection.InsertMany(ctx, genresI)
-	return insertManyResult, err
+	return manager.InsertMany("genres", genresI...)
 }
 
 // InsertAnimes insert list of animes in animes collection
-func InsertAnimes(client *mongo.Client, animes []scrape.Anime) (*mongo.InsertManyResult, error) {
+func (manager *Manager) InsertAnimes(animes []scrape.Anime) (*mongo.InsertManyResult, error) {
 	animesI := make([]interface{}, len(animes))
 	for i, v := range animes {
 		animesI[i] = v
 	}
-	collection := client.Database("deguvon").Collection("animes")
-	insertManyResult, err := collection.InsertMany(ctx, animesI)
-	return insertManyResult, err
+	return manager.InsertMany("genres", animesI...)
 }
 
 // SetLatestEpisodes drop the latestEpisodes after insert data in latestEpisodes collection
@@ -174,7 +179,7 @@ func LoadStates(client *mongo.Client) ([]scrape.State, error) {
 // LoadOneType from db
 func (manager *Manager) LoadOneType(id int) (interface{}, error) {
 	var result scrape.Type
-	coll := manager.getCollection("types")
+	coll := manager.GetCollection("types")
 	err := coll.FindOne(ctx, bson.M{"_id": id}).Decode(&result)
 	return result, err
 }
@@ -295,7 +300,7 @@ func LoadOneAnime(client *mongo.Client, flvid int) (scrape.Anime, error) {
 
 // SearchAnimeByName from db
 func (manager *Manager) SearchAnimeByName(name string) ([]scrape.Anime, error) {
-	coll := manager.getCollection("animes")
+	coll := manager.GetCollection("animes")
 	patternName := `.*` + name + `.*`
 	nameB := bson.M{"name": bson.M{"$regex": primitive.Regex{Pattern: patternName, Options: "i"}}}
 	othernamesB := bson.M{"othernames": bson.M{"$regex": primitive.Regex{Pattern: patternName, Options: "i"}}}

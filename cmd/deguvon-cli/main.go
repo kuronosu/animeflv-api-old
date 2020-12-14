@@ -63,10 +63,11 @@ func createDirectory() {
 	manager.DropAll()
 
 	dillDbTime := time.Now()
-	db.InsertStates(manager.Client, container.States)
-	db.InsertTypes(manager.Client, container.Types)
-	db.InsertGenres(manager.Client, container.Genres)
-	insertResult, err := db.InsertAnimes(manager.Client, container.Animes)
+	// manager.InsertMany("states", container.States...)
+	manager.InsertStates(container.States)
+	manager.InsertTypes(container.Types)
+	manager.InsertGenres(container.Genres)
+	insertResult, err := manager.InsertAnimes(container.Animes)
 	if err != nil {
 		log.Fatal(err)
 	}

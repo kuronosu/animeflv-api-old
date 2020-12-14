@@ -10,12 +10,12 @@ type Manager struct {
 	Client *mongo.Client
 }
 
-func (manager *Manager) getDB() *mongo.Database {
+func (manager *Manager) GetDB() *mongo.Database {
 	return manager.Client.Database("deguvon")
 }
 
-func (manager *Manager) getCollection(collectionName string) *mongo.Collection {
-	return manager.getDB().Collection(collectionName)
+func (manager *Manager) GetCollection(collectionName string) *mongo.Collection {
+	return manager.GetDB().Collection(collectionName)
 }
 
 // Serial represents a sequence document
