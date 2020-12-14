@@ -55,12 +55,6 @@ func (manager *Manager) InsertMany(coll string, data ...interface{}) (*mongo.Ins
 
 // InsertStates insert list of states in states collection
 func (manager *Manager) InsertStates(states []scrape.State) (*mongo.InsertManyResult, error) {
-	// elementsI := make([]interface{}, len(elements))
-	// for i, v := range elements {
-	// 	elementsI[i] = v
-	// }
-	// return elementsI
-
 	statesI := make([]interface{}, len(states))
 	for i, v := range states {
 		statesI[i] = v
@@ -96,27 +90,25 @@ func (manager *Manager) InsertAnimes(animes []scrape.Anime) (*mongo.InsertManyRe
 }
 
 // SetLatestEpisodes drop the latestEpisodes after insert data in latestEpisodes collection
-func SetLatestEpisodes(client *mongo.Client, latestEpisodes []*scrape.LatestEpisode) (*mongo.InsertManyResult, error) {
+func (manager *Manager) SetLatestEpisodes(latestEpisodes []*scrape.LatestEpisode) (*mongo.InsertManyResult, error) {
 	if len(latestEpisodes) != 20 {
 		return nil, fmt.Errorf("Latest episodes length must be 20, it has %d", len(latestEpisodes))
 	}
-	collection := client.Database("deguvon").Collection("latestEpisodes")
+	collection := manager.GetCollection("latestEpisodes")
 	e := collection.Drop(ctx)
 	if e != nil {
 		return nil, e
 	}
-	collection = client.Database("deguvon").Collection("latestEpisodes")
-	latestEpisodesInterface := make([]interface{}, len(latestEpisodes))
+	latestEpisodesI := make([]interface{}, len(latestEpisodes))
 	for i, v := range latestEpisodes {
-		latestEpisodesInterface[i] = v
+		latestEpisodesI[i] = v
 	}
-	insertManyResult, err := collection.InsertMany(ctx, latestEpisodesInterface)
-	return insertManyResult, err
+	return manager.InsertMany("latestEpisodes", latestEpisodesI...)
 }
 
 // UpdateOrInsertAnimes is very self-describing ... :)
-func UpdateOrInsertAnimes(client *mongo.Client, animes []scrape.Anime) ([]mongo.UpdateResult, []scrape.Anime, []error) {
-	collection := client.Database("deguvon").Collection("animes")
+func (manager *Manager) UpdateOrInsertAnimes(animes []scrape.Anime) ([]mongo.UpdateResult, []scrape.Anime, []error) {
+	collection := manager.GetCollection("animes")
 	animesInterface := make([]interface{}, len(animes))
 	for i, v := range animes {
 		animesInterface[i] = v
@@ -157,8 +149,8 @@ func UpdateOrInsertAnimes(client *mongo.Client, animes []scrape.Anime) ([]mongo.
 }
 
 // LoadStates from db
-func LoadStates(client *mongo.Client) ([]scrape.State, error) {
-	coll := client.Database("deguvon").Collection("states")
+func (manager *Manager) LoadStates() ([]scrape.State, error) {
+	coll := manager.Client.Database("deguvon").Collection("states")
 	cur, _ := coll.Find(ctx, bson.D{{}}, options.Find())
 	var results []scrape.State
 	for cur.Next(ctx) {
@@ -185,8 +177,8 @@ func (manager *Manager) LoadOneType(id int) (interface{}, error) {
 }
 
 // LoadTypes from db
-func LoadTypes(client *mongo.Client) ([]scrape.Type, error) {
-	coll := client.Database("deguvon").Collection("types")
+func (manager *Manager) LoadTypes() ([]scrape.Type, error) {
+	coll := manager.GetCollection("types")
 	var results []scrape.Type
 	cur, err := coll.Find(ctx, bson.D{{}}, options.Find())
 	if err != nil {
@@ -208,8 +200,8 @@ func LoadTypes(client *mongo.Client) ([]scrape.Type, error) {
 }
 
 // LoadGenres from db
-func LoadGenres(client *mongo.Client) ([]scrape.Genre, error) {
-	coll := client.Database("deguvon").Collection("genres")
+func (manager *Manager) LoadGenres() ([]scrape.Genre, error) {
+	coll := manager.GetCollection("genres")
 	cur, _ := coll.Find(ctx, bson.D{{}}, options.Find())
 	var results []scrape.Genre
 	for cur.Next(ctx) {
@@ -228,8 +220,8 @@ func LoadGenres(client *mongo.Client) ([]scrape.Genre, error) {
 }
 
 // LoadAnimes from db with pagination
-func LoadAnimes(client *mongo.Client, opts Options) (PaginatedAnimeResult, error) {
-	coll := client.Database("deguvon").Collection("animes")
+func (manager *Manager) LoadAnimes(opts Options) (PaginatedAnimeResult, error) {
+	coll := manager.GetCollection("animes")
 	animeCount, err := coll.CountDocuments(context.TODO(), bson.D{{}})
 	if err != nil {
 		return PaginatedAnimeResult{}, err
@@ -271,8 +263,8 @@ func LoadAnimes(client *mongo.Client, opts Options) (PaginatedAnimeResult, error
 }
 
 // LoadAllAnimes from db
-func LoadAllAnimes(client *mongo.Client) ([]scrape.Anime, error) {
-	coll := client.Database("deguvon").Collection("animes")
+func (manager *Manager) LoadAllAnimes() ([]scrape.Anime, error) {
+	coll := manager.GetCollection("animes")
 	cur, _ := coll.Find(ctx, bson.D{{}}, options.Find())
 	var results []scrape.Anime
 	for cur.Next(ctx) {
@@ -291,10 +283,9 @@ func LoadAllAnimes(client *mongo.Client) ([]scrape.Anime, error) {
 }
 
 // LoadOneAnime from db
-func LoadOneAnime(client *mongo.Client, flvid int) (scrape.Anime, error) {
+func (manager *Manager) LoadOneAnime(flvid int) (scrape.Anime, error) {
 	var result scrape.Anime
-	coll := client.Database("deguvon").Collection("animes")
-	err := coll.FindOne(ctx, bson.M{"_id": flvid}).Decode(&result)
+	err := manager.GetCollection("animes").FindOne(ctx, bson.M{"_id": flvid}).Decode(&result)
 	return result, err
 }
 
@@ -326,8 +317,8 @@ func (manager *Manager) SearchAnimeByName(name string) ([]scrape.Anime, error) {
 }
 
 // LoadLatestEpisodes from db
-func LoadLatestEpisodes(client *mongo.Client) ([]scrape.LatestEpisode, error) {
-	coll := client.Database("deguvon").Collection("latestEpisodes")
+func (manager *Manager) LoadLatestEpisodes() ([]scrape.LatestEpisode, error) {
+	coll := manager.GetCollection("latestEpisodes")
 	cur, _ := coll.Find(ctx, bson.D{{}}, options.Find())
 	var results []scrape.LatestEpisode
 	for cur.Next(ctx) {
