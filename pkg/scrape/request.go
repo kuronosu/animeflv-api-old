@@ -130,6 +130,7 @@ func AllAnimesByPage() (interface{}, []RequestResult, []int) {
 	// return errc
 	fmt.Fprint(os.Stdout, fmt.Sprintf("\r \rCompleted... Pages: %d Animes: %d, Erros: %d in Time %s                                            \n",
 		pages, len(container.Animes), len(errs), time.Since(start)))
+	container.Animes = UniqueAnimes(container.Animes)
 	return container, errs, pagesErr
 }
 

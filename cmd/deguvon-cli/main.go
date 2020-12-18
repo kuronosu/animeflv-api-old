@@ -53,7 +53,7 @@ func main() {
 }
 
 func createDirectory() {
-	manager, err := db.SetUp()
+	manager, err := db.SetUp("deguvon", "mongodb://localhost:27017")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -80,7 +80,7 @@ func createDirectory() {
 
 func intervalForLatestEpisodes() {
 	fmt.Print("Connect to db")
-	manager, err := db.SetUp()
+	manager, err := db.SetUp("deguvon", "mongodb://localhost:27017")
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"strconv"
@@ -13,19 +14,30 @@ import (
 )
 
 func main() {
-	manager := createDBManager()
-	go startLatestEpisodesScraper(manager)
-	utils.FatalLog(startWebServer(manager))
+	manager := db.CreateDBManager("animeflv", getAnimeFLVConnectionString())
+	createFlag := flag.Bool("c", false, "Create directory")
+	latestEpisodesFlag := flag.Bool("le", false, "Latest episodes")
+	apiServerFlag := flag.Bool("ars", true, "Api Rest server")
+	flag.Parse()
+
+	if *createFlag {
+		createDirectory(manager)
+	}
+	if *latestEpisodesFlag {
+		utils.InfoLog("Last episode scraper ON")
+		go startLatestEpisodesScraper(manager)
+	}
+	if *apiServerFlag {
+		utils.FatalLog(startWebServer(manager))
+	}
 }
 
-func createDBManager() db.Manager {
-	utils.InfoLog("Connect to db")
-	manager, err := db.SetUp()
-	if err != nil {
-		utils.FatalLog(err)
+func getAnimeFLVConnectionString() string {
+	connectionString := os.Getenv("AnimeFLVConnectionString")
+	if connectionString == "" {
+		connectionString = "mongodb://localhost:27017"
 	}
-	utils.SuccessLog("Connected to db")
-	return manager
+	return connectionString
 }
 
 func startWebServer(manager db.Manager) error {
@@ -63,4 +75,26 @@ func startLatestEpisodesScraper(manager db.Manager) {
 		}
 		time.Sleep(1 * time.Minute)
 	}
+}
+
+func createDirectory(manager db.Manager) {
+	containerI, _, _ := scrape.AllAnimesByPage()
+	container := containerI.(scrape.AnimeSPContainer)
+
+	manager.DropAll()
+
+	dillDbTime := time.Now()
+	// manager.InsertMany("states", container.States...)
+	manager.InsertStates(container.States)
+	manager.InsertTypes(container.Types)
+	manager.InsertGenres(container.Genres)
+	insertResult, err := manager.InsertAnimes(container.Animes)
+	if err != nil {
+		utils.FatalLog(err)
+	}
+	le, _, e := scrape.FetchLatestEpisodes()
+	if e == nil {
+		manager.SetLatestEpisodes(le)
+	}
+	utils.SuccessLog(fmt.Sprintf("Base de datos llenada en %s con %d animes", time.Since(dillDbTime), len(insertResult.InsertedIDs)))
 }

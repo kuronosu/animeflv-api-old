@@ -3,10 +3,10 @@ package db
 import (
 	"context"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/kuronosu/animeflv-api/pkg/scrape"
+	"github.com/kuronosu/animeflv-api/pkg/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -16,12 +16,7 @@ import (
 var ctx = context.TODO()
 
 // SetUp Create mongo client
-func SetUp() (Manager, error) {
-	connectionString := os.Getenv("MongoConnectionString")
-	if connectionString == "" {
-		connectionString = "mongodb://localhost:27017"
-	}
-
+func SetUp(dbName string, connectionString string) (Manager, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(connectionString))
@@ -34,7 +29,18 @@ func SetUp() (Manager, error) {
 	if err != nil {
 		return Manager{}, err
 	}
-	return Manager{Client: client}, nil
+	return Manager{Client: client, DBName: dbName}, nil
+}
+
+// CreateDBManager Create mongo client and launch fatal when error
+func CreateDBManager(dbname string, connString string) Manager {
+	utils.InfoLog("Connect to db")
+	manager, err := SetUp(dbname, connString)
+	if err != nil {
+		utils.FatalLog(err)
+	}
+	utils.SuccessLog("Connected to db")
+	return manager
 }
 
 // DropAll collection from db
@@ -86,7 +92,7 @@ func (manager *Manager) InsertAnimes(animes []scrape.Anime) (*mongo.InsertManyRe
 	for i, v := range animes {
 		animesI[i] = v
 	}
-	return manager.InsertMany("genres", animesI...)
+	return manager.InsertMany("animes", animesI...)
 }
 
 // SetLatestEpisodes drop the latestEpisodes after insert data in latestEpisodes collection
@@ -150,7 +156,7 @@ func (manager *Manager) UpdateOrInsertAnimes(animes []scrape.Anime) ([]mongo.Upd
 
 // LoadStates from db
 func (manager *Manager) LoadStates() ([]scrape.State, error) {
-	coll := manager.Client.Database("deguvon").Collection("states")
+	coll := manager.GetCollection("states")
 	cur, _ := coll.Find(ctx, bson.D{{}}, options.Find())
 	var results []scrape.State
 	for cur.Next(ctx) {

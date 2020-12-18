@@ -8,10 +8,11 @@ import (
 // Manager contains a db client and other utils
 type Manager struct {
 	Client *mongo.Client
+	DBName string
 }
 
 func (manager *Manager) GetDB() *mongo.Database {
-	return manager.Client.Database("deguvon")
+	return manager.Client.Database(manager.DBName)
 }
 
 func (manager *Manager) GetCollection(collectionName string) *mongo.Collection {

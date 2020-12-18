@@ -83,3 +83,19 @@ func ValidServer(server string) bool {
 	}
 	return false
 }
+
+// UniqueAnimes remove duplicates from a anime slice
+func UniqueAnimes(sample []Anime) []Anime {
+	var unique []Anime
+mainLoop:
+	for _, v := range sample {
+		for i, u := range unique {
+			if v.URL == u.URL {
+				unique[i] = v
+				continue mainLoop
+			}
+		}
+		unique = append(unique, v)
+	}
+	return unique
+}

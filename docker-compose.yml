@@ -5,7 +5,7 @@ services:
     image: kuronosu/animeflv-api
     build: .
     environment:
-      MongoConnectionString: "mongodb://db:27017"
+      AnimeFLVConnectionString: "mongodb://db:27017"
     depends_on:
       - db
     ports:
