@@ -32,8 +32,8 @@ func SetUp(dbName string, connectionString string) (Manager, error) {
 	return Manager{Client: client, DBName: dbName}, nil
 }
 
-// CreateDBManager Create mongo client and launch fatal when error
-func CreateDBManager(dbname string, connString string) Manager {
+// CreateManager Create mongo client and launch fatal when error
+func CreateManager(dbname string, connString string) Manager {
 	utils.InfoLog("Connect to db")
 	manager, err := SetUp(dbname, connString)
 	if err != nil {

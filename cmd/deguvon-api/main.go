@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	manager := db.CreateDBManager("animeflv", getAnimeFLVConnectionString())
+	manager := db.CreateManager("animeflv", getAnimeFLVConnectionString())
 	createFlag := flag.Bool("c", false, "Create directory")
 	latestEpisodesFlag := flag.Bool("le", false, "Latest episodes")
 	apiServerFlag := flag.Bool("ars", true, "Api Rest server")

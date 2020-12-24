@@ -216,25 +216,19 @@ func (api *API) HandleEpisodeDetails(w http.ResponseWriter, r *http.Request) {
 // HandleEpisodeVideo manage the videos endpoint
 func (api *API) HandleEpisodeVideo(w http.ResponseWriter, r *http.Request) {
 	server, found := mux.Vars(r)["server"]
-	if !found {
-		http.NotFound(w, r)
-		return
-	}
 	server = strings.ToLower(server)
-	if !scrape.ValidServer(server) {
+	if !found || !scrape.ValidServer(server) {
 		http.NotFound(w, r)
 		return
 	}
 	lang, found := mux.Vars(r)["lang"]
+	lang = strings.ToUpper(lang)
 	if !found {
 		lang = "SUB"
-	}
-	lang = strings.ToUpper(lang)
-	if !scrape.ValidLang(lang) {
+	} else if !scrape.ValidLang(lang) {
 		http.NotFound(w, r)
 		return
 	}
-
 	episodeRes, err := api.getEpisode(r)
 	if err != nil {
 		http.NotFound(w, r)
