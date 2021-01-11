@@ -16,7 +16,7 @@ const (
 )
 
 func main() {
-	le := flag.Bool("le", true, "Api Rest server")
+	le := flag.Bool("le", true, "Send latest episodes scraper signal to server")
 	required := []string{"le"}
 	flag.Parse()
 
@@ -24,9 +24,8 @@ func main() {
 	flag.Visit(func(f *flag.Flag) { seen[f.Name] = true })
 	for _, req := range required {
 		if !seen[req] {
-			// or possibly use `log.Fatalf` instead of:
 			fmt.Fprintf(os.Stderr, "Missing required -%s argument/flag\n", req)
-			os.Exit(2) // the same exit code flag.Parse uses
+			os.Exit(2)
 		}
 	}
 
