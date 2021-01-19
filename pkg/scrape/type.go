@@ -85,10 +85,10 @@ type AnimeSPContainer struct {
 
 // Directory contains all directory data
 type Directory struct {
-	States []State       `json:"states"`
-	Types  []Type        `json:"types"`
-	Genres []Genre       `json:"genres"`
-	Animes map[int]Anime `json:"animes"`
+	States []State `json:"states"`
+	Types  []Type  `json:"types"`
+	Genres []Genre `json:"genres"`
+	Animes []Anime `json:"animes"`
 }
 
 type animeLatest struct {

@@ -180,16 +180,12 @@ func (api *API) HandleDirectory(w http.ResponseWriter, r *http.Request) {
 		InternalError(w, "Error al cargar datos")
 		return
 	}
-	animes, _ := api.DBManager.LoadAllAnimes()
-	if len(animes) == 0 {
+	animes, err := api.DBManager.LoadAllAnimes()
+	if err != nil || len(animes) == 0 {
 		InternalError(w, "Error al cargar datos")
 		return
 	}
-	animesMap := make(map[int]scrape.Anime)
-	for _, anime := range animes {
-		animesMap[anime.Flvid] = anime
-	}
-	JSONResponse(w, scrape.Directory{States: states, Types: types, Genres: genres, Animes: animesMap}, http.StatusOK)
+	JSONResponse(w, scrape.Directory{States: states, Types: types, Genres: genres, Animes: animes}, http.StatusOK)
 }
 
 // HandleEpisodeList manage the episodes endpoint

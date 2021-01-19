@@ -271,15 +271,29 @@ func (manager *Manager) LoadAnimes(opts Options) (PaginatedAnimeResult, error) {
 // LoadAllAnimes from db
 func (manager *Manager) LoadAllAnimes() ([]scrape.Anime, error) {
 	coll := manager.GetCollection("animes")
-	cur, _ := coll.Find(ctx, bson.D{{}}, options.Find())
+	ops := options.Find()
+	ops.SetSort(bson.D{{"_id", 1}})
+	cur, _ := coll.Find(ctx, bson.D{{}}, ops)
 	var results []scrape.Anime
+	emptyEpisodes := []scrape.Episode{}
+	emptyGenres := []int{}
+	emptyNames := []string{}
 	for cur.Next(ctx) {
-		var s scrape.Anime
-		err := cur.Decode(&s)
+		var anime scrape.Anime
+		err := cur.Decode(&anime)
+		if anime.Genres == nil {
+			anime.Genres = emptyGenres
+		}
+		if anime.OtherNames == nil {
+			anime.OtherNames = emptyNames
+		}
+		if anime.Episodes == nil {
+			anime.Episodes = emptyEpisodes
+		}
 		if err != nil {
 			return results, err
 		}
-		results = append(results, s)
+		results = append(results, anime)
 	}
 	if err := cur.Err(); err != nil {
 		return results, err
