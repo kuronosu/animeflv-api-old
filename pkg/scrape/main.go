@@ -159,13 +159,8 @@ func getBanner(document *goquery.Document) string {
 }
 
 func getSynopsis(document *goquery.Document) string {
-	var description string
-	document.Find("meta").Each(func(i int, s *goquery.Selection) {
-		if name, _ := s.Attr("name"); name == "description" {
-			description = s.AttrOr("content", "")
-		}
-	})
-	return description
+	description := document.Find("div.Description").Text()
+	return strings.Trim(strings.Trim(description, "\n"), " ")
 }
 
 func getRelations(document *goquery.Document) []Relation {
