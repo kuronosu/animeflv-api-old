@@ -14,6 +14,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/kuronosu/animeflv-api/pkg/db"
 	"github.com/kuronosu/animeflv-api/pkg/scrape"
+	"github.com/kuronosu/animeflv-api/pkg/utils"
 )
 
 var baseTemplate = filepath.Join("res", "tmpl", "base.html")
@@ -260,15 +261,17 @@ func (api *API) HandleAnimeSearch(w http.ResponseWriter, r *http.Request) {
 
 func handleImage(w http.ResponseWriter, r *http.Request, url string, validator func(*http.Response) bool) {
 	reqImg, err := scrape.Fetch(url)
-	defer reqImg.Body.Close()
 	if err != nil {
+		utils.ErrorLog(err)
 		http.NotFound(w, r)
 		return
 	}
 	if reqImg.StatusCode != 200 || !validator(reqImg) {
+		utils.ErrorLog(err)
 		http.NotFound(w, r)
 		return
 	}
+	defer reqImg.Body.Close()
 	w.WriteHeader(reqImg.StatusCode)
 	w.Header().Set("Content-Length", fmt.Sprint(reqImg.ContentLength))
 	w.Header().Set("Content-Type", reqImg.Header.Get("Content-Type"))
