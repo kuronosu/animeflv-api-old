@@ -38,7 +38,7 @@ func loadToken() (string, error) {
 	token := os.Getenv(TOKEN_VALUE_ENV)
 	err := fmt.Errorf("%s environment variable is not set and is not in the .env file", TOKEN_VALUE_ENV)
 	if token == "" {
-		file, err := os.Open(WORKERS_FILE)
+		file, err := os.Open(TOKEN_VALUE_FILE)
 		if err != nil {
 			return "", err
 		}
