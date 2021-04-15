@@ -12,16 +12,16 @@ import (
 
 // Code based on https://github.com/jychp/cloudflare-bypass
 
-var TOKEN_VALUE_ENV = "TOKEN_VALUE"
-
 var PROXYS_URL = []string{}
 
 const (
-	WORKERS_FILE = ".workers"
-	TOKEN_HEADER = "Px-Token"
-	HOST_HEADER  = "Px-Host"
-	IP_HEADER    = "Px-IP"
-	FAKE_IP      = "1.2.3.4"
+	WORKERS_FILE     = ".workers"
+	TOKEN_VALUE_ENV  = "TOKEN_VALUE"
+	TOKEN_VALUE_FILE = ".env"
+	TOKEN_HEADER     = "Px-Token"
+	HOST_HEADER      = "Px-Host"
+	IP_HEADER        = "Px-IP"
+	FAKE_IP          = "1.2.3.4"
 )
 
 type CFProxy struct {
@@ -33,6 +33,34 @@ type CFProxy struct {
 }
 
 var proxyCount = -1
+
+func loadToken() (string, error) {
+	token := os.Getenv(TOKEN_VALUE_ENV)
+	err := fmt.Errorf("%s environment variable is not set and is not in the .env file", TOKEN_VALUE_ENV)
+	if token == "" {
+		file, err := os.Open(WORKERS_FILE)
+		if err != nil {
+			return "", err
+		}
+		defer file.Close()
+		scanner := bufio.NewScanner(file)
+		scanner.Split(bufio.ScanLines)
+		for scanner.Scan() {
+			pair := strings.Split(strings.TrimSpace(scanner.Text()), "=")
+			if len(pair) != 2 {
+				return "", fmt.Errorf("Malformed .env file")
+			}
+			if pair[0] == TOKEN_VALUE_ENV {
+				if pair[1] != "" {
+					return token, nil
+				}
+			}
+		}
+	} else {
+		return token, nil
+	}
+	return "", err
+}
 
 func loadProxyUrls() ([]string, error) {
 	file, err := os.Open(WORKERS_FILE)
@@ -69,9 +97,9 @@ func GetCFProxy() (*CFProxy, error) {
 }
 
 func NewProxy(proxyHost string, ua string, fakeIP string) (*CFProxy, error) {
-	token := os.Getenv(TOKEN_VALUE_ENV)
-	if token == "" {
-		return nil, fmt.Errorf("%s environment variable is not set", TOKEN_VALUE_ENV)
+	token, err := loadToken()
+	if err != nil {
+		return nil, err
 	}
 	return &CFProxy{
 		Token:     token,
