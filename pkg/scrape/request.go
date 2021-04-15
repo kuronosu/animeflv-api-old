@@ -14,14 +14,15 @@ import (
 
 // Fetch make request and return response
 func Fetch(URL string) (*http.Response, error) {
-	client := &http.Client{
-		Timeout: 2 * time.Second,
-	}
-	resp, err := client.Get(URL)
+	proxy, err := GetCFProxy()
 	if err != nil {
-		resp.Body.Close()
+		return nil, err
 	}
-	return resp, err
+	res, err := proxy.Get(URL)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }
 
 // FetchPost make a post request and return response
@@ -63,7 +64,7 @@ func AsyncHTTPGetsAnimes(urls []string, container *AnimeSPContainer) []*RequestR
 	ch := make(chan *RequestResult, len(urls)) // buffered
 	for _, URL := range urls {
 		go func(URL string) {
-			resp, err := http.Get(AnimeURL(URL))
+			resp, err := Fetch(AnimeURL(URL))
 			ch <- &RequestResult{Response: resp, URL: URL, ResponseErr: err}
 		}(URL)
 	}
@@ -100,7 +101,7 @@ func GetAnimes(urls []string, container *AnimeSPContainer) []RequestResult {
 }
 
 // AllAnimesByPage get all the animes by making asynchronous requests one page at a time
-func AllAnimesByPage() (interface{}, []RequestResult, []int) {
+func AllAnimesByPage() (interface{}, []RequestResult, []int, error) {
 	start := time.Now()
 	errs := []RequestResult{}
 	pagesErr := []int{}
@@ -112,26 +113,28 @@ func AllAnimesByPage() (interface{}, []RequestResult, []int) {
 		Animes: []Anime{},
 	}
 	if err != nil {
-		return container, errs, pagesErr
+		return container, errs, pagesErr, err
 	}
+	var e error = nil
 	for _, page := range MakeRange(1, pages) {
 		start2 := time.Now()
 		urls, err := GetAnimeURLSFromDirectoryPage(page)
 		prevCount := len(container.Animes)
 		if err == nil {
+			e = err
 			erros := GetAnimes(urls, &container)
 			errs = append(errs, erros...)
-			fmt.Fprint(os.Stdout, fmt.Sprintf("\r \rScraped page %d of %d with %d animes and %d errors in %s. Total animes %d in %s",
+			fmt.Fprintln(os.Stdout, fmt.Sprintf("Scraped page %d of %d with %d animes and %d errors in %s. Total animes %d in %s",
 				page, pages, len(container.Animes)-prevCount, len(erros), time.Since(start2), len(container.Animes), time.Since(start)))
 		} else {
 			pagesErr = append(pagesErr, page)
 		}
 	}
 	// return errc
-	fmt.Fprint(os.Stdout, fmt.Sprintf("\r \rCompleted... Pages: %d Animes: %d, Erros: %d in Time %s                                            \n",
+	fmt.Fprintln(os.Stdout, fmt.Sprintf("Completed... Pages: %d Animes: %d, Erros: %d in Time %s                                            \n",
 		pages, len(container.Animes), len(errs), time.Since(start)))
 	container.Animes = UniqueAnimes(container.Animes)
-	return container, errs, pagesErr
+	return container, errs, pagesErr, e
 }
 
 // FetchLatestEpisodes get the animes with latest episodes
@@ -195,7 +198,7 @@ func AsyncHTTPGetsEpisodes(urls []string, handle func(RequestResult) interface{}
 	ch := make(chan *RequestResult, len(urls)) // buffered
 	for _, URL := range urls {
 		go func(URL string) {
-			resp, err := http.Get(EpisodeURL(URL))
+			resp, err := Fetch(EpisodeURL(URL))
 			ch <- &RequestResult{Response: resp, URL: URL, ResponseErr: err}
 		}(URL)
 	}

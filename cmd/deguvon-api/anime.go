@@ -56,19 +56,32 @@ func (aexs *animeExecutionsState) latestEpisodesScraperLoop(manager db.Manager) 
 }
 
 func createDirectory(manager db.Manager) {
-	containerI, _, _ := scrape.AllAnimesByPage()
+	containerI, _, pgErr, err := scrape.AllAnimesByPage()
+	if err != nil {
+		utils.ErrorLog(fmt.Sprintf("Error al scrapear las paginas %s, %s", fmt.Sprint(pgErr), err))
+		return
+	}
 	container := containerI.(scrape.AnimeSPContainer)
 
 	manager.DropAll()
 
 	dillDbTime := time.Now()
 	// manager.InsertMany("states", container.States...)
-	manager.InsertStates(container.States)
-	manager.InsertTypes(container.Types)
-	manager.InsertGenres(container.Genres)
+	_, err = manager.InsertStates(container.States)
+	if err != nil {
+		utils.FatalLog("InsertStates ", err)
+	}
+	_, err = manager.InsertTypes(container.Types)
+	if err != nil {
+		utils.FatalLog("InsertTypes ", err)
+	}
+	_, err = manager.InsertGenres(container.Genres)
+	if err != nil {
+		utils.FatalLog("InsertGenres ", err)
+	}
 	insertResult, err := manager.InsertAnimes(container.Animes)
 	if err != nil {
-		utils.FatalLog(err)
+		utils.FatalLog("InsertAnimes ", err)
 	}
 	le, _, e := scrape.FetchLatestEpisodes()
 	if e == nil {
