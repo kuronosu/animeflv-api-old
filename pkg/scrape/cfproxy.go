@@ -12,7 +12,7 @@ import (
 
 // Code based on https://github.com/jychp/cloudflare-bypass
 
-var TOKEN_VALUE = os.Getenv("TOKEN_VALUE")
+var TOKEN_VALUE_ENV = "TOKEN_VALUE"
 
 var PROXYS_URL = []string{}
 
@@ -25,6 +25,7 @@ const (
 )
 
 type CFProxy struct {
+	Token     string
 	ProxyHost string
 	FakeIP    string
 	UserAgent string
@@ -68,10 +69,12 @@ func GetCFProxy() (*CFProxy, error) {
 }
 
 func NewProxy(proxyHost string, ua string, fakeIP string) (*CFProxy, error) {
-	if TOKEN_VALUE == "" {
-		return nil, fmt.Errorf("TOKEN_VALUE environment variable is not set")
+	token := os.Getenv(TOKEN_VALUE_ENV)
+	if token == "" {
+		return nil, fmt.Errorf("%s environment variable is not set", TOKEN_VALUE_ENV)
 	}
 	return &CFProxy{
+		Token:     token,
 		ProxyHost: proxyHost,
 		UserAgent: ua,
 		FakeIP:    fakeIP,
@@ -99,6 +102,6 @@ func (proxy *CFProxy) DoRequest(method string, URL string, headers map[string]st
 	req.Header.Set("User-Agent", proxy.UserAgent)
 	req.Header.Set(HOST_HEADER, parsedURI.Hostname())
 	req.Header.Set(IP_HEADER, proxy.FakeIP)
-	req.Header.Set(TOKEN_HEADER, TOKEN_VALUE)
+	req.Header.Set(TOKEN_HEADER, proxy.Token)
 	return proxy.Client.Do(req)
 }
