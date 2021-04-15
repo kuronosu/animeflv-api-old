@@ -52,7 +52,7 @@ func loadToken() (string, error) {
 			}
 			if pair[0] == TOKEN_VALUE_ENV {
 				if pair[1] != "" {
-					return token, nil
+					return pair[1], nil
 				}
 			}
 		}
