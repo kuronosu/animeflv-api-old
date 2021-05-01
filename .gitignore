@@ -1,3 +1,4 @@
 cmd/deguvon-test/
 docker-compose.override.yml
 .workers
+.env

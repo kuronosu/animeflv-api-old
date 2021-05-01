@@ -133,7 +133,7 @@ func (api *API) HandleAnimes(w http.ResponseWriter, r *http.Request) {
 	sortField, sortValue := validSortField(r.URL.Query().Get("order"))
 	options := db.Options{Page: page, SortField: sortField, SortValue: sortValue}
 	result, err := api.DBManager.LoadAnimes(options)
-	if len(result.Animes) == 0 || err != nil {
+	if err != nil || len(result.Animes) == 0 {
 		InternalError(w, "Error al cargar datos")
 		return
 	}

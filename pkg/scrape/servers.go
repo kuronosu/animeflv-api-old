@@ -92,53 +92,52 @@ func (v *Video) CheckLanguageByServer(server string, lang string) (VideoServerDa
 func (v *Video) Gocdn(lang string) error {
 	video, err := v.CheckLanguageByServer("gocdn", lang)
 	if err != nil {
-		subs := strings.Split(video.Code, "#")
-		if len(subs) > 0 {
-			resp, err := Fetch("https://streamium.xyz/gocdn.php?v=" + subs[len(subs)-1])
-			if err != nil {
-				return err
-			}
-			bodyBytes, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				return err
-			}
-			var data map[string]string
-			err = json.Unmarshal(bodyBytes, &data)
-			if err != nil {
-				return err
-			}
-			url, found := data["file"]
-			if !found {
-				return fmt.Errorf("could not get the url of the video")
-			}
-			v.ActiveURL = url
-			return nil
-		}
+		return err
 	}
-	return err
+	subs := strings.Split(video.Code, "#")
+	if len(subs) == 0 {
+		return fmt.Errorf("Cant extract the code of video")
+	}
+	resp, err := Fetch("https://streamium.xyz/gocdn.php?v=" + subs[len(subs)-1])
+	if err != nil {
+		return err
+	}
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	var data map[string]string
+	err = json.Unmarshal(bodyBytes, &data)
+	if err != nil {
+		return err
+	}
+	url, found := data["file"]
+	if !found {
+		return fmt.Errorf("could not get the url of the video")
+	}
+	v.ActiveURL = url
+	return nil
 }
 
 // Fembed activate the fembed video server
 func (v *Video) Fembed(lang string) error {
 	video, err := v.CheckLanguageByServer("fembed", lang)
 	if err != nil {
-		resp, err := FetchPost(strings.Replace(video.Code, "/v/", "/api/source/", 1))
-		if err != nil {
-			fmt.Println(err)
-			return err
-		}
-		bodyBytes, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			fmt.Println(err)
-			return err
-		}
-		var fdata FembedResponse
-		err = json.Unmarshal(bodyBytes, &fdata)
-		if !fdata.Success || len(fdata.Data) == 0 || err != nil {
-			return fmt.Errorf("Request was not succeeded")
-		}
-		v.ActiveURL = fdata.Data[0].File
-		return nil
+		return err
 	}
-	return err
+	resp, err := FetchPost(strings.Replace(video.Code, "/v/", "/api/source/", 1))
+	if err != nil {
+		return err
+	}
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	var fdata FembedResponse
+	err = json.Unmarshal(bodyBytes, &fdata)
+	if !fdata.Success || len(fdata.Data) == 0 || err != nil {
+		return fmt.Errorf("Request was not succeeded")
+	}
+	v.ActiveURL = fdata.Data[0].File
+	return nil
 }
